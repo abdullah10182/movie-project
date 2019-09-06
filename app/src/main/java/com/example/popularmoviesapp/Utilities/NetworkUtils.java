@@ -1,6 +1,10 @@
 package com.example.popularmoviesapp.Utilities;
 
+import android.content.res.Resources;
 import android.net.Uri;
+
+import com.example.popularmoviesapp.MainActivity;
+import com.example.popularmoviesapp.R;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,8 +15,10 @@ import java.util.Scanner;
 
 public class NetworkUtils {
 
-    final static String GITHUB_BASE_URL =
-            "https://api.github.com/search/repositories";
+    //final static String GITHUB_BASE_URL = "https://api.github.com/search/repositories";
+    static String apiKey = null;
+    //final static String GITHUB_BASE_URL = "https://api.themoviedb.org/3/movie/popular?api_key="+ apiKey +"&language=en-US&page=1";
+
 
     final static String PARAM_QUERY = "q";
 
@@ -23,16 +29,14 @@ public class NetworkUtils {
     final static String PARAM_SORT = "sort";
     final static String sortBy = "stars";
 
-    /**
-     * Builds the URL used to query GitHub.
-     *
-     * @param githubSearchQuery The keyword that will be queried for.
-     * @return The URL to use to query the GitHub server.
-     */
-    public static URL buildUrl(String githubSearchQuery) {
-        Uri builtUri = Uri.parse(GITHUB_BASE_URL).buildUpon()
-                .appendQueryParameter(PARAM_QUERY, githubSearchQuery)
-                .appendQueryParameter(PARAM_SORT, sortBy)
+
+    public static URL buildUrl(String apiKey) {
+//        Uri builtUri = Uri.parse(GITHUB_BASE_URL).buildUpon()
+//                .appendQueryParameter(PARAM_QUERY, githubSearchQuery)
+//                .appendQueryParameter(PARAM_SORT, sortBy)
+//                .build();
+        String urlString = "https://api.themoviedb.org/3/movie/popular?api_key="+ apiKey +"&language=en-US&page=1";
+        Uri builtUri = Uri.parse(urlString).buildUpon()
                 .build();
 
         URL url = null;
