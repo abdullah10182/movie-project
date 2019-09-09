@@ -15,37 +15,30 @@ import java.util.Scanner;
 
 public class NetworkUtils {
 
-    //final static String GITHUB_BASE_URL = "https://api.github.com/search/repositories";
-    static String apiKey = null;
-    //final static String GITHUB_BASE_URL = "https://api.themoviedb.org/3/movie/popular?api_key="+ apiKey +"&language=en-US&page=1";
+    final static String MOVIEDB_BASE_URL = "https://api.themoviedb.org/3/discover/movie";
 
 
-    final static String PARAM_QUERY = "q";
+    public static URL buildUrl(String apiKey, String sortBy) {
+        //https://api.themoviedb.org/3/discover/movie?api_key=1794dee38856c7c24f577c0cae2e2b15&language=en-US&sort_by=popularity.desc&page=1
+        //popularity.asc, popularity.desc
 
-    /*
-     * The sort field. One of stars, forks, or updated.
-     * Default: results are sorted by best match if no field is specified.
-     */
-    final static String PARAM_SORT = "sort";
-    final static String sortBy = "stars";
+        if(sortBy == null || sortBy.equals("")){
+            sortBy = "popularity.desc";
+        }
 
-
-    public static URL buildUrl(String apiKey) {
-//        Uri builtUri = Uri.parse(GITHUB_BASE_URL).buildUpon()
-//                .appendQueryParameter(PARAM_QUERY, githubSearchQuery)
-//                .appendQueryParameter(PARAM_SORT, sortBy)
-//                .build();
-        String urlString = "https://api.themoviedb.org/3/movie/popular?api_key="+ apiKey +"&language=en-US&page=1";
-        Uri builtUri = Uri.parse(urlString).buildUpon()
+        Uri builtUri = Uri.parse(MOVIEDB_BASE_URL).buildUpon()
+                .appendQueryParameter("api_key", apiKey)
+                .appendQueryParameter("language", "en-US")
+                .appendQueryParameter("sort_by", sortBy)
+                .appendQueryParameter("page", "1")
                 .build();
-
         URL url = null;
         try {
+            System.out.println("------------" + builtUri.toString());
             url = new URL(builtUri.toString());
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
-
         return url;
     }
 

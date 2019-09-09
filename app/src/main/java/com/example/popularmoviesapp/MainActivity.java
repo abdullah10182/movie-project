@@ -23,7 +23,7 @@ import java.net.URL;
 
 public class MainActivity extends AppCompatActivity {
     Button button;
-    ListView tvText;
+    ListView lvText;
 
     String[] mobileArray = {"Android","IPhone","WindowsMobile","Blackberry",
             "WebOS","Ubuntu","Windows7","Max OS X","Android","IPhone","WindowsMobile","Blackberry",
@@ -44,39 +44,25 @@ public class MainActivity extends AppCompatActivity {
             StrictMode.setThreadPolicy(policy);
         }
 
-        tvText = findViewById(R.id.listview1);
-
+        lvText = (ListView) findViewById(R.id.listview1);
         button = (Button) findViewById(R.id.button1);
+
+        fetchMovieData();
+
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                test();
-
-//                JSONObject jsonObj;
-//                try {
-//                    jsonObj = new JSONObject(jsonString);
-//                    movieTitles = MovieDbJsonUtils.getSimpleWeatherStringsFromJson(MainActivity.this, jsonString);
-//                } catch (JSONException e) {
-//                    e.printStackTrace();
-//                }
-//
-//
-//                ArrayAdapter adapter = new ArrayAdapter<String>(MainActivity.this, R.layout.list_item, movieTitles);
-//
-//                ListView listView = (ListView) findViewById(R.id.listview1);
-//                listView.setAdapter(adapter);
+                fetchMovieData();
             }
         });
     }
 
-    private void test() {
+    private void fetchMovieData() {
         String apiKey = getResources().getString(R.string.the_moviedb_api_key);
-
-        URL githubSearchUrl = NetworkUtils.buildUrl(apiKey);
+        URL githubSearchUrl = NetworkUtils.buildUrl(apiKey, "popularity.desc");
         System.out.println(githubSearchUrl);
         //String githubSearchResults = null;
         new MovieDbQueryTask().execute(githubSearchUrl);
-
     }
 
 
