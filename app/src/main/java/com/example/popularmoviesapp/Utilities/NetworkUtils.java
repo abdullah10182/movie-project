@@ -1,5 +1,6 @@
 package com.example.popularmoviesapp.Utilities;
 
+import android.content.Context;
 import android.content.res.Resources;
 import android.net.Uri;
 
@@ -15,26 +16,26 @@ import java.util.Scanner;
 
 public class NetworkUtils {
 
-    final static String MOVIEDB_BASE_URL = "https://api.themoviedb.org/3/discover/movie";
+    final static private String MOVIE_DB_BASE_URL = "https://api.themoviedb.org/3/discover/movie";
 
 
-    public static URL buildUrl(String apiKey, String sortBy) {
+    public static URL buildUrl(Context context, String sortBy) {
         //https://api.themoviedb.org/3/discover/movie?api_key=1794dee38856c7c24f577c0cae2e2b15&language=en-US&sort_by=popularity.desc&page=1
-        //popularity.asc, popularity.desc
+        //popularity.desc, popularity.asc, vote_count.desc, vote_count.asc
+        URL url = null;
+        String apiKey = context.getResources().getString(R.string.the_moviedb_api_key);
 
         if(sortBy == null || sortBy.equals("")){
             sortBy = "popularity.desc";
         }
 
-        Uri builtUri = Uri.parse(MOVIEDB_BASE_URL).buildUpon()
+        Uri builtUri = Uri.parse(MOVIE_DB_BASE_URL).buildUpon()
                 .appendQueryParameter("api_key", apiKey)
                 .appendQueryParameter("language", "en-US")
                 .appendQueryParameter("sort_by", sortBy)
                 .appendQueryParameter("page", "1")
                 .build();
-        URL url = null;
         try {
-            System.out.println("------------" + builtUri.toString());
             url = new URL(builtUri.toString());
         } catch (MalformedURLException e) {
             e.printStackTrace();

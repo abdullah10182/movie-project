@@ -9,30 +9,21 @@ import org.json.JSONObject;
 import java.net.HttpURLConnection;
 
 public class MovieDbJsonUtils {
-        public static String[] getSimpleWeatherStringsFromJson(Context context, String forecastJsonStr) throws JSONException {
+        public static String[] getArrayStringFromJson(Context context, String jsonStr, String objKey) throws JSONException {
 
             /* String array to hold each day's weather String */
-            String[] parsedWeatherData = null;
+            String[] parsedStringArray = null;
 
-            JSONObject forecastJson = new JSONObject(forecastJsonStr);
+            JSONObject jsonObj = new JSONObject(jsonStr);
+            JSONArray resultsArray = jsonObj.getJSONArray("results");
 
+            parsedStringArray = new String[resultsArray.length()];
 
-            JSONArray weatherArray = forecastJson.getJSONArray("results");
-
-            parsedWeatherData = new String[weatherArray.length()];
-
-            for (int i = 0; i < weatherArray.length(); i++) {
-                String title;
-                String posterUrl;
-
-                /* Get the JSON object representing the day */
-                JSONObject dayForecast = weatherArray.getJSONObject(i);
-
-                System.out.println(dayForecast.getString("original_title"));
-
-                parsedWeatherData[i] = dayForecast.getString("original_title");
+            for (int i = 0; i < resultsArray.length(); i++) {
+                JSONObject resultObject = resultsArray.getJSONObject(i);
+                parsedStringArray[i] = resultObject.getString(objKey);
             }
 
-            return parsedWeatherData;
+            return parsedStringArray;
         }
 }
