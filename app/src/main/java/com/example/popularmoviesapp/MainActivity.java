@@ -34,9 +34,9 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
     Button button;
-    RecyclerView lvText;
     ArrayList<String> movieTitles = new ArrayList<>();
-    String[] moviePosters;
+    ArrayList<String> moviePosters = new ArrayList<>();
+    RecyclerView mRecyclerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,21 +49,27 @@ public class MainActivity extends AppCompatActivity {
             StrictMode.setThreadPolicy(policy);
         }
 
-        lvText =  (RecyclerView) findViewById(R.id.rv_listview);
+
         button = (Button) findViewById(R.id.button1);
 
-        fetchMovieData();
+        mRecyclerView = findViewById(R.id.rv_listview);
+        RecyclerView.LayoutManager layoutManager = new GridLayoutManager(MainActivity.this,2);
+        mRecyclerView.setLayoutManager(layoutManager);
+        //to avoid error: recyclerview No adapter attached; skipping layout
+        RecyclerViewAdapter adapter = new RecyclerViewAdapter(MainActivity.this, movieTitles, moviePosters);
+        mRecyclerView.setAdapter(adapter);
 
+        fetchMovieData("popularity.desc");
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                fetchMovieData();
+                fetchMovieData("vote_count.desc");
             }
         });
     }
 
-    private void fetchMovieData() {
-        URL githubSearchUrl = NetworkUtils.buildUrl(this,"popularity.desc");
+    private void fetchMovieData(String sortBy) {
+        URL githubSearchUrl = NetworkUtils.buildUrl(this, sortBy);
         System.out.println(githubSearchUrl);
         new MovieDbQueryTask().execute(githubSearchUrl);
     }
@@ -75,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
         protected void onPreExecute() {
             super.onPreExecute();
             button.setText("loading...");
-            lvText.setVisibility(View.INVISIBLE);
+            mRecyclerView.setVisibility(View.INVISIBLE);
         }
 
         @Override
@@ -92,60 +98,21 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String jsonString) {
             if(jsonString != null && !jsonString.equals("")) {
+                ArrayList<String> moviePostersPartialUrl = new ArrayList<>();
                 button.setText("Button");
-                lvText.setVisibility(View.VISIBLE);
+                mRecyclerView.setVisibility(View.VISIBLE);
                 try {
-                    movieTitles = MovieDbJsonUtils.getArrayStringFromJson(MainActivity.this, jsonString, "original_title");
-                   // moviePosters = MovieDbJsonUtils.getArrayStringFromJson(MainActivity.this, jsonString, "poster_path");
+                    movieTitles = MovieDbJsonUtils.getArrayListStringFromJson(MainActivity.this, jsonString, "original_title");
+                    moviePostersPartialUrl = MovieDbJsonUtils.getArrayListStringFromJson(MainActivity.this, jsonString, "poster_path");
+                    moviePosters = MovieDbJsonUtils.createMoviePosterUrls(moviePostersPartialUrl);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
 
-//                ArrayAdapter adapter = new ArrayAdapter<String>(MainActivity.this, R.layout.list_item, movieTitles);
-//                ListView listView = (ListView) findViewById(R.id.listview1);
-//                listView.setAdapter(adapter);
-
-//                MyAdpater adapter = new MyAdpater(MainActivity.this, movieTitles, moviePosters);
-//                ListView listView = findViewById(R.id.listview1);
-//                listView.setAdapter(adapter);
-
-                RecyclerView recyclerView = findViewById(R.id.rv_listview);
-                RecyclerViewAdapter adapter = new RecyclerViewAdapter(MainActivity.this, movieTitles);
-                recyclerView.setAdapter(adapter);
-                //recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.this));
-                RecyclerView.LayoutManager layoutManager = new GridLayoutManager(MainActivity.this,2);
-                recyclerView.setLayoutManager(layoutManager);
+                RecyclerViewAdapter adapter = new RecyclerViewAdapter(MainActivity.this, movieTitles, moviePosters);
+                mRecyclerView.setAdapter(adapter);
 
             }
         }
     }
-
-    class MyAdpater extends ArrayAdapter<String> {
-        Context context;
-        String rMovieTitles[];
-        String rMoviePosters[];
-
-
-        public MyAdpater(Context c, String movieTitles[], String moviePosters[]) {
-            super(c, R.layout.list_item, R.id.tv_label, movieTitles);
-            this.context = c;
-            this.rMovieTitles = movieTitles;
-            this.rMoviePosters = moviePosters;
-        }
-
-        @NonNull
-        @Override
-        public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-            LayoutInflater layoutInflater = (LayoutInflater) getApplicationContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            View row = layoutInflater.inflate(R.layout.list_item, parent, false);
-            TextView myTitle = row.findViewById(R.id.tv_label);
-            TextView myPoster = row.findViewById(R.id.tv_poster);
-
-            myTitle.setText(rMovieTitles[position]);
-            myPoster.setText(rMoviePosters[position]);
-
-            return row;
-        }
-    }
-
 }
