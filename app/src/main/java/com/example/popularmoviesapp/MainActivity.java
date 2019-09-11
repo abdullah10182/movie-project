@@ -3,6 +3,9 @@ package com.example.popularmoviesapp;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -20,17 +23,19 @@ import android.widget.TextView;
 
 import com.example.popularmoviesapp.Utilities.MovieDbJsonUtils;
 import com.example.popularmoviesapp.Utilities.NetworkUtils;
+import com.example.popularmoviesapp.Utilities.RecyclerViewAdapter;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
     Button button;
-    ListView lvText;
-    String[] movieTitles;
+    RecyclerView lvText;
+    ArrayList<String> movieTitles = new ArrayList<>();
     String[] moviePosters;
 
     @Override
@@ -44,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
             StrictMode.setThreadPolicy(policy);
         }
 
-        lvText = (ListView) findViewById(R.id.listview1);
+        lvText =  (RecyclerView) findViewById(R.id.rv_listview);
         button = (Button) findViewById(R.id.button1);
 
         fetchMovieData();
@@ -91,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
                 lvText.setVisibility(View.VISIBLE);
                 try {
                     movieTitles = MovieDbJsonUtils.getArrayStringFromJson(MainActivity.this, jsonString, "original_title");
-                    moviePosters = MovieDbJsonUtils.getArrayStringFromJson(MainActivity.this, jsonString, "poster_path");
+                   // moviePosters = MovieDbJsonUtils.getArrayStringFromJson(MainActivity.this, jsonString, "poster_path");
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -100,9 +105,16 @@ public class MainActivity extends AppCompatActivity {
 //                ListView listView = (ListView) findViewById(R.id.listview1);
 //                listView.setAdapter(adapter);
 
-                MyAdpater adapter = new MyAdpater(MainActivity.this, movieTitles, moviePosters);
-                ListView listView = findViewById(R.id.listview1);
-                listView.setAdapter(adapter);
+//                MyAdpater adapter = new MyAdpater(MainActivity.this, movieTitles, moviePosters);
+//                ListView listView = findViewById(R.id.listview1);
+//                listView.setAdapter(adapter);
+
+                RecyclerView recyclerView = findViewById(R.id.rv_listview);
+                RecyclerViewAdapter adapter = new RecyclerViewAdapter(MainActivity.this, movieTitles);
+                recyclerView.setAdapter(adapter);
+                //recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.this));
+                RecyclerView.LayoutManager layoutManager = new GridLayoutManager(MainActivity.this,2);
+                recyclerView.setLayoutManager(layoutManager);
 
             }
         }
