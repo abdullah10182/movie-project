@@ -1,4 +1,4 @@
-package com.example.popularmoviesapp.Utilities;
+package com.example.popularmoviesapp.utilities;
 
 import android.content.Context;
 import android.util.Log;
@@ -11,24 +11,27 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.popularmoviesapp.R;
+import com.example.popularmoviesapp.model.MovieItem;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
+import java.util.List;
 
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
 public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder>{
 
     private static final String TAG = "RecyclerViewAdapter";
 
-    private ArrayList<String> mTitles = new ArrayList<>();
-    private ArrayList<String> mPosters = new ArrayList<>();
+    private ArrayList<String> mTitles;
+    private ArrayList<String> mPosters;
+    private List<MovieItem> mMovieItems;
     private Context mContext;
 
-    public RecyclerViewAdapter(Context mContext, ArrayList<String> mTitles, ArrayList<String> mPosters) {
-        this.mTitles = mTitles;
-        this.mPosters = mPosters;
+    public RecyclerViewAdapter(Context mContext, ArrayList<MovieItem> movieItems) {
+//        this.mTitles = mTitles;
+//        this.mPosters = mPosters;
+        this.mMovieItems = movieItems;
         this.mContext = mContext;
     }
 
@@ -43,24 +46,22 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     public void onBindViewHolder(final ViewHolder holder, final int position) {
         Log.d(TAG, "onBindViewHolder: called.");
 
-        System.out.println(mPosters.get(position));
-
-        holder.title.setText(mTitles.get(position));
-        Picasso.get().load(mPosters.get(position)).fit().centerInside().into(holder.poster);
+        holder.title.setText(mMovieItems.get(position).getTitle());
+        Picasso.get().load(mMovieItems.get(position).getPoster()).fit().centerInside().into(holder.poster);
 
         holder.parentLayout.setOnClickListener(new View.OnClickListener(){
 
             @Override
             public void onClick(View view) {
-                Log.d(TAG, "onClick: " + mTitles.get(position));
-                Toast.makeText(mContext, mTitles.get(position), Toast.LENGTH_SHORT).show();
+               // Log.d(TAG, "onClick: " + mMovieItems.get(position).getDescription());
+                Toast.makeText(mContext, mMovieItems.get(position).getDescription(), Toast.LENGTH_SHORT).show();
             }
         });
     }
 
     @Override
     public int getItemCount() {
-        return mTitles.size();
+        return mMovieItems.size();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder{
@@ -68,6 +69,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         TextView title;
         ImageView poster;
         LinearLayout parentLayout;
+
         public ViewHolder(View itemView) {
             super(itemView);
 

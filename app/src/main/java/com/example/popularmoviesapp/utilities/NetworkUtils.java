@@ -1,10 +1,8 @@
-package com.example.popularmoviesapp.Utilities;
+package com.example.popularmoviesapp.utilities;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.net.Uri;
 
-import com.example.popularmoviesapp.MainActivity;
 import com.example.popularmoviesapp.R;
 
 import java.io.IOException;

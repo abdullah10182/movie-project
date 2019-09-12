@@ -1,32 +1,21 @@
 package com.example.popularmoviesapp;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.content.Context;
-import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.StrictMode;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Adapter;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ListView;
-import android.widget.TextView;
 
-import com.example.popularmoviesapp.Utilities.MovieDbJsonUtils;
-import com.example.popularmoviesapp.Utilities.NetworkUtils;
-import com.example.popularmoviesapp.Utilities.RecyclerViewAdapter;
+import com.example.popularmoviesapp.model.MovieItem;
+import com.example.popularmoviesapp.utilities.MovieDbJsonUtils;
+import com.example.popularmoviesapp.utilities.NetworkUtils;
+import com.example.popularmoviesapp.utilities.RecyclerViewAdapter;
 
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.URL;
@@ -34,8 +23,9 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
     Button button;
-    ArrayList<String> movieTitles = new ArrayList<>();
-    ArrayList<String> moviePosters = new ArrayList<>();
+//    ArrayList<String> movieTitles = new ArrayList<>();
+//    ArrayList<String> moviePosters = new ArrayList<>();
+    ArrayList<MovieItem> mMovieItems = new ArrayList<>();
     RecyclerView mRecyclerView;
 
     @Override
@@ -56,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
         RecyclerView.LayoutManager layoutManager = new GridLayoutManager(MainActivity.this,2);
         mRecyclerView.setLayoutManager(layoutManager);
         //to avoid error: recyclerview No adapter attached; skipping layout
-        RecyclerViewAdapter adapter = new RecyclerViewAdapter(MainActivity.this, movieTitles, moviePosters);
+        RecyclerViewAdapter adapter = new RecyclerViewAdapter(MainActivity.this, mMovieItems);
         mRecyclerView.setAdapter(adapter);
 
         fetchMovieData("popularity.desc");
@@ -102,14 +92,15 @@ public class MainActivity extends AppCompatActivity {
                 button.setText("Button");
                 mRecyclerView.setVisibility(View.VISIBLE);
                 try {
-                    movieTitles = MovieDbJsonUtils.getArrayListStringFromJson(MainActivity.this, jsonString, "original_title");
-                    moviePostersPartialUrl = MovieDbJsonUtils.getArrayListStringFromJson(MainActivity.this, jsonString, "poster_path");
-                    moviePosters = MovieDbJsonUtils.createMoviePosterUrls(moviePostersPartialUrl);
+                    //movieTitles = MovieDbJsonUtils.getArrayListStringFromJson(MainActivity.this, jsonString, "original_title");
+                    //moviePostersPartialUrl = MovieDbJsonUtils.getArrayListStringFromJson(MainActivity.this, jsonString, "poster_path");
+                    //moviePosters = MovieDbJsonUtils.createMoviePosterUrls(moviePostersPartialUrl);
+                    mMovieItems = MovieDbJsonUtils.getArrayListMovieItems(MainActivity.this, jsonString);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
 
-                RecyclerViewAdapter adapter = new RecyclerViewAdapter(MainActivity.this, movieTitles, moviePosters);
+                RecyclerViewAdapter adapter = new RecyclerViewAdapter(MainActivity.this, mMovieItems);
                 mRecyclerView.setAdapter(adapter);
 
             }
