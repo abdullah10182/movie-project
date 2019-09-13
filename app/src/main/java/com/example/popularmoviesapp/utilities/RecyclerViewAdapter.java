@@ -1,6 +1,7 @@
 package com.example.popularmoviesapp.utilities;
 
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,6 +11,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.popularmoviesapp.DetailActivity;
+import com.example.popularmoviesapp.MainActivity;
 import com.example.popularmoviesapp.R;
 import com.example.popularmoviesapp.model.MovieItem;
 import com.squareup.picasso.Picasso;
@@ -54,10 +57,20 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
             @Override
             public void onClick(View view) {
                // Log.d(TAG, "onClick: " + mMovieItems.get(position).getDescription());
-                Toast.makeText(mContext, mMovieItems.get(position).getDescription(), Toast.LENGTH_SHORT).show();
+               // Toast.makeText(mContext, mMovieItems.get(position).getDescription(), Toast.LENGTH_SHORT).show();
+                launchDetailActivity(mMovieItems.get(position));
             }
         });
     }
+
+    public void launchDetailActivity(MovieItem movieData) {
+        System.out.println(movieData.getTitle());
+        Intent intent = new Intent(mContext, DetailActivity.class);
+        intent.putExtra("movieTitle", movieData.getTitle());
+        intent.putExtra("movieBackdropImage", movieData.getBackdropImage());
+        mContext.startActivity(intent);
+    }
+
 
     @Override
     public int getItemCount() {

@@ -44,9 +44,6 @@ public class MainActivity extends AppCompatActivity {
         mRecyclerView = findViewById(R.id.rv_listview);
         RecyclerView.LayoutManager layoutManager = new GridLayoutManager(MainActivity.this,2);
         mRecyclerView.setLayoutManager(layoutManager);
-        mRecyclerView.setHasFixedSize(true);
-        adapter = new RecyclerViewAdapter(MainActivity.this, mMovieItems);
-        mRecyclerView.setAdapter(adapter);
 
         //initialize data fetching
         fetchMovieData("popularity.desc");
@@ -80,7 +77,6 @@ public class MainActivity extends AppCompatActivity {
         URL githubSearchUrl = NetworkUtils.buildUrl(this, sortBy);
         new MovieDbQueryTask().execute(githubSearchUrl);
     }
-
 
     class MovieDbQueryTask extends AsyncTask<URL, Void, String> {
 
