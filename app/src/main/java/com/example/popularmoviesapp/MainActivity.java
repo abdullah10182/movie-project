@@ -1,5 +1,6 @@
 package com.example.popularmoviesapp;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -7,6 +8,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.StrictMode;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 
@@ -22,11 +26,9 @@ import java.net.URL;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
-    Button button;
-//    ArrayList<String> movieTitles = new ArrayList<>();
-//    ArrayList<String> moviePosters = new ArrayList<>();
     ArrayList<MovieItem> mMovieItems = new ArrayList<>();
     RecyclerView mRecyclerView;
+    RecyclerViewAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,28 +41,43 @@ public class MainActivity extends AppCompatActivity {
             StrictMode.setThreadPolicy(policy);
         }
 
-
-        button = (Button) findViewById(R.id.button1);
-
         mRecyclerView = findViewById(R.id.rv_listview);
         RecyclerView.LayoutManager layoutManager = new GridLayoutManager(MainActivity.this,2);
         mRecyclerView.setLayoutManager(layoutManager);
-        //to avoid error: recyclerview No adapter attached; skipping layout
-        RecyclerViewAdapter adapter = new RecyclerViewAdapter(MainActivity.this, mMovieItems);
+        mRecyclerView.setHasFixedSize(true);
+        adapter = new RecyclerViewAdapter(MainActivity.this, mMovieItems);
         mRecyclerView.setAdapter(adapter);
 
+        //initialize data fetching
         fetchMovieData("popularity.desc");
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.sort_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_sort_popular:
+                fetchMovieData("popularity.desc");
+                item.setChecked(true);
+                return true;
+            case R.id.action_sort_top_rated:
                 fetchMovieData("vote_count.desc");
-            }
-        });
+                item.setChecked(true);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+
+        }
     }
 
     private void fetchMovieData(String sortBy) {
         URL githubSearchUrl = NetworkUtils.buildUrl(this, sortBy);
-        System.out.println(githubSearchUrl);
         new MovieDbQueryTask().execute(githubSearchUrl);
     }
 
@@ -70,7 +87,6 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            button.setText("loading...");
             mRecyclerView.setVisibility(View.INVISIBLE);
         }
 
@@ -88,21 +104,14 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String jsonString) {
             if(jsonString != null && !jsonString.equals("")) {
-                ArrayList<String> moviePostersPartialUrl = new ArrayList<>();
-                button.setText("Button");
                 mRecyclerView.setVisibility(View.VISIBLE);
                 try {
-                    //movieTitles = MovieDbJsonUtils.getArrayListStringFromJson(MainActivity.this, jsonString, "original_title");
-                    //moviePostersPartialUrl = MovieDbJsonUtils.getArrayListStringFromJson(MainActivity.this, jsonString, "poster_path");
-                    //moviePosters = MovieDbJsonUtils.createMoviePosterUrls(moviePostersPartialUrl);
                     mMovieItems = MovieDbJsonUtils.getArrayListMovieItems(MainActivity.this, jsonString);
+                    adapter = new RecyclerViewAdapter(MainActivity.this, mMovieItems);
+                    mRecyclerView.setAdapter(adapter);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-
-                RecyclerViewAdapter adapter = new RecyclerViewAdapter(MainActivity.this, mMovieItems);
-                mRecyclerView.setAdapter(adapter);
-
             }
         }
     }
