@@ -44,6 +44,8 @@ public class MainActivity extends AppCompatActivity {
         mRecyclerView = findViewById(R.id.rv_listview);
         RecyclerView.LayoutManager layoutManager = new GridLayoutManager(MainActivity.this,2);
         mRecyclerView.setLayoutManager(layoutManager);
+        adapter = new RecyclerViewAdapter(MainActivity.this, mMovieItems);
+        mRecyclerView.setAdapter(adapter);
 
         //initialize data fetching
         fetchMovieData("popularity.desc");
@@ -103,8 +105,8 @@ public class MainActivity extends AppCompatActivity {
                 mRecyclerView.setVisibility(View.VISIBLE);
                 try {
                     mMovieItems = MovieDbJsonUtils.getArrayListMovieItems(MainActivity.this, jsonString);
-                    adapter = new RecyclerViewAdapter(MainActivity.this, mMovieItems);
-                    mRecyclerView.setAdapter(adapter);
+                    adapter.setMovieList(mMovieItems);
+                    adapter.notifyDataSetChanged();
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }

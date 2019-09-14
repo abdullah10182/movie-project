@@ -6,12 +6,15 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
 public class DetailActivity extends AppCompatActivity {
 
     private ImageView backdropImage;
+    private TextView description;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -19,6 +22,7 @@ public class DetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_detail);
 
         backdropImage = findViewById(R.id.iv_backdrop_image);
+        description = findViewById(R.id.tv_description_text);
 
         Intent mIntent = getIntent();
 
@@ -28,6 +32,8 @@ public class DetailActivity extends AppCompatActivity {
 //        private String backdropImage;
 //        private String userRating;
 
+
+        description.setText(mIntent.getStringExtra("description"));
         Picasso.get().load(mIntent.getStringExtra("movieBackdropImage")).fit().centerCrop().into(backdropImage);
 
 

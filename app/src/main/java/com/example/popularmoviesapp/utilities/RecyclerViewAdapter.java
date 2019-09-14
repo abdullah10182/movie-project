@@ -66,9 +66,14 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     public void launchDetailActivity(MovieItem movieData) {
         System.out.println(movieData.getTitle());
         Intent intent = new Intent(mContext, DetailActivity.class);
-        intent.putExtra("movieTitle", movieData.getTitle());
         intent.putExtra("movieBackdropImage", movieData.getBackdropImage());
+        intent.putExtra("movieTitle", movieData.getTitle());
+        intent.putExtra("description", movieData.getDescription());
         mContext.startActivity(intent);
+    }
+
+    public void setMovieList(List<MovieItem> movieList) {
+        this.mMovieItems = movieList;
     }
 
 
