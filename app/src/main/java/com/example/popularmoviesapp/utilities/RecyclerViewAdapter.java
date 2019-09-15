@@ -20,6 +20,7 @@ import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 import java.util.List;
 
+import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder>{
@@ -69,6 +70,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         intent.putExtra("movieBackdropImage", movieData.getBackdropImage());
         intent.putExtra("movieTitle", movieData.getTitle());
         intent.putExtra("description", movieData.getDescription());
+        intent.putExtra("rating", movieData.getUserRating());
         mContext.startActivity(intent);
     }
 
@@ -86,7 +88,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
         TextView title;
         ImageView poster;
-        LinearLayout parentLayout;
+        CardView parentLayout;
 
         public ViewHolder(View itemView) {
             super(itemView);

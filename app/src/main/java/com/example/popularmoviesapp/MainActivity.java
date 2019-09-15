@@ -13,6 +13,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
 
 import com.example.popularmoviesapp.model.MovieItem;
 import com.example.popularmoviesapp.utilities.MovieDbJsonUtils;
@@ -29,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<MovieItem> mMovieItems = new ArrayList<>();
     RecyclerView mRecyclerView;
     RecyclerViewAdapter adapter;
+    ProgressBar mProgressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         mRecyclerView = findViewById(R.id.rv_listview);
+        mProgressBar = findViewById(R.id.pb_progressbar);
         RecyclerView.LayoutManager layoutManager = new GridLayoutManager(MainActivity.this,2);
         mRecyclerView.setLayoutManager(layoutManager);
         adapter = new RecyclerViewAdapter(MainActivity.this, mMovieItems);
@@ -86,6 +89,7 @@ public class MainActivity extends AppCompatActivity {
         protected void onPreExecute() {
             super.onPreExecute();
             mRecyclerView.setVisibility(View.INVISIBLE);
+            mProgressBar.setVisibility(View.VISIBLE);
         }
 
         @Override
@@ -103,6 +107,7 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(String jsonString) {
             if(jsonString != null && !jsonString.equals("")) {
                 mRecyclerView.setVisibility(View.VISIBLE);
+                mProgressBar.setVisibility(View.INVISIBLE);
                 try {
                     mMovieItems = MovieDbJsonUtils.getArrayListMovieItems(MainActivity.this, jsonString);
                     adapter.setMovieList(mMovieItems);

@@ -14,6 +14,8 @@ public class DetailActivity extends AppCompatActivity {
 
     private ImageView backdropImage;
     private TextView description;
+    private TextView userRating;
+    private TextView title;
 
 
     @Override
@@ -21,21 +23,17 @@ public class DetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
 
+        title = findViewById(R.id.tv_title_under);
         backdropImage = findViewById(R.id.iv_backdrop_image);
         description = findViewById(R.id.tv_description_text);
+        userRating = findViewById(R.id.tv_user_rating);
 
         Intent mIntent = getIntent();
 
-//        private String title;
-//        private String poster;
-//        private String description;
-//        private String backdropImage;
-//        private String userRating;
-
-
+        title.setText(mIntent.getStringExtra("movieTitle"));
         description.setText(mIntent.getStringExtra("description"));
+        userRating.append(mIntent.getStringExtra("rating"));
         Picasso.get().load(mIntent.getStringExtra("movieBackdropImage")).fit().centerCrop().into(backdropImage);
-
 
         ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
