@@ -5,6 +5,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.StrictMode;
@@ -14,6 +17,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.example.popularmoviesapp.model.MovieItem;
 import com.example.popularmoviesapp.utilities.MovieDbJsonUtils;
@@ -26,11 +30,14 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 
+import static androidx.core.content.ContextCompat.getSystemService;
+
 public class MainActivity extends AppCompatActivity {
     ArrayList<MovieItem> mMovieItems = new ArrayList<>();
     RecyclerView mRecyclerView;
     RecyclerViewAdapter adapter;
     ProgressBar mProgressBar;
+    Button mRetryBtn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,13 +52,14 @@ public class MainActivity extends AppCompatActivity {
 
         mRecyclerView = findViewById(R.id.rv_listview);
         mProgressBar = findViewById(R.id.pb_progressbar);
+        mRetryBtn = findViewById(R.id.btn_retry);
         RecyclerView.LayoutManager layoutManager = new GridLayoutManager(MainActivity.this,2);
         mRecyclerView.setLayoutManager(layoutManager);
         adapter = new RecyclerViewAdapter(MainActivity.this, mMovieItems);
         mRecyclerView.setAdapter(adapter);
 
         //initialize data fetching
-        fetchMovieData("popularity.desc");
+        fetchMovieData("popular");
     }
 
     @Override
@@ -65,11 +73,11 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_sort_popular:
-                fetchMovieData("popularity.desc");
+                fetchMovieData("popular");
                 item.setChecked(true);
                 return true;
             case R.id.action_sort_top_rated:
-                fetchMovieData("vote_count.desc");
+                fetchMovieData("top_rated");
                 item.setChecked(true);
                 return true;
             default:
@@ -79,8 +87,26 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void fetchMovieData(String sortBy) {
+        mRecyclerView.setVisibility(View.INVISIBLE);
+        mProgressBar.setVisibility(View.VISIBLE);
         URL githubSearchUrl = NetworkUtils.buildUrl(this, sortBy);
-        new MovieDbQueryTask().execute(githubSearchUrl);
+        if(NetworkUtils.isNetworkAvailable(MainActivity.this)){
+            new MovieDbQueryTask().execute(githubSearchUrl);
+        } else {
+            connectionFailed();
+        }
+    }
+
+    public void retryFetchData(View view) {
+        mRetryBtn.setVisibility(View.INVISIBLE);
+        fetchMovieData("popular");
+
+    }
+
+    public void connectionFailed() {
+        Toast.makeText(getApplicationContext(), "No connection to the internet", Toast.LENGTH_LONG).show();
+        mProgressBar.setVisibility(View.INVISIBLE);
+        mRetryBtn.setVisibility(View.VISIBLE);
     }
 
     class MovieDbQueryTask extends AsyncTask<URL, Void, String> {
@@ -88,8 +114,8 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            mRecyclerView.setVisibility(View.INVISIBLE);
-            mProgressBar.setVisibility(View.VISIBLE);
+//            mRecyclerView.setVisibility(View.INVISIBLE);
+//            mProgressBar.setVisibility(View.VISIBLE);
         }
 
         @Override
@@ -109,12 +135,14 @@ public class MainActivity extends AppCompatActivity {
                 mRecyclerView.setVisibility(View.VISIBLE);
                 mProgressBar.setVisibility(View.INVISIBLE);
                 try {
-                    mMovieItems = MovieDbJsonUtils.getArrayListMovieItems(MainActivity.this, jsonString);
+                    mMovieItems = MovieDbJsonUtils.getArrayListMovieItems(jsonString);
                     adapter.setMovieList(mMovieItems);
                     adapter.notifyDataSetChanged();
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+            } else {
+                connectionFailed();
             }
         }
     }

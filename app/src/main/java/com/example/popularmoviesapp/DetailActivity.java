@@ -16,6 +16,7 @@ public class DetailActivity extends AppCompatActivity {
     private TextView description;
     private TextView userRating;
     private TextView title;
+    private TextView releaseDate;
 
 
     @Override
@@ -27,12 +28,14 @@ public class DetailActivity extends AppCompatActivity {
         backdropImage = findViewById(R.id.iv_backdrop_image);
         description = findViewById(R.id.tv_description_text);
         userRating = findViewById(R.id.tv_user_rating);
+        releaseDate = findViewById(R.id.tv_release_date);
 
         Intent mIntent = getIntent();
 
         title.setText(mIntent.getStringExtra("movieTitle"));
         description.setText(mIntent.getStringExtra("description"));
         userRating.append(mIntent.getStringExtra("rating"));
+        releaseDate.append(mIntent.getStringExtra("releaseDate"));
         Picasso.get().load(mIntent.getStringExtra("movieBackdropImage")).fit().centerCrop().into(backdropImage);
 
         ActionBar actionBar = getSupportActionBar();

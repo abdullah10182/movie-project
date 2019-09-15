@@ -6,13 +6,16 @@ public class MovieItem {
     private String description;
     private String backdropImage;
     private String userRating;
+    private String releaseDate;
 
-    public MovieItem(String title, String poster, String description, String backdropImage, String userRating) {
+
+    public MovieItem(String title, String poster, String description, String backdropImage, String userRating, String releaseDate) {
         this.title = title;
         this.poster = poster;
         this.description = description;
         this.backdropImage = backdropImage;
         this.userRating = userRating;
+        this.releaseDate = releaseDate;
     }
 
     public String getTitle() {
@@ -53,5 +56,13 @@ public class MovieItem {
 
     public void setUserRating(String userRating) {
         this.userRating = userRating;
+    }
+
+    public String getReleaseDate() {
+        return releaseDate;
+    }
+
+    public void setReleaseDate(String releaseDate) {
+        this.releaseDate = releaseDate;
     }
 }

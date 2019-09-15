@@ -1,6 +1,8 @@
 package com.example.popularmoviesapp.utilities;
 
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 
 import com.example.popularmoviesapp.R;
@@ -12,26 +14,23 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Scanner;
 
+import static android.content.Context.*;
+import static androidx.core.content.ContextCompat.getSystemService;
+
 public class NetworkUtils {
 
-    final static private String MOVIE_DB_BASE_URL = "https://api.themoviedb.org/3/discover/movie";
+    final static private String MOVIE_DB_BASE_URL = "http://api.themoviedb.org/3/movie/";
+    //http://api.themoviedb.org/3/movie/popular?api_key=1794dee38856c7c24f577c0cae2e2b15
 
 
     public static URL buildUrl(Context context, String sortBy) {
-        //https://api.themoviedb.org/3/discover/movie?api_key=1794dee38856c7c24f577c0cae2e2b15&language=en-US&sort_by=popularity.desc&page=1
         //popularity.desc, popularity.asc, vote_count.desc, vote_count.asc
         URL url = null;
         String apiKey = context.getResources().getString(R.string.the_moviedb_api_key);
 
-        if(sortBy == null || sortBy.equals("")){
-            sortBy = "popularity.desc";
-        }
-
         Uri builtUri = Uri.parse(MOVIE_DB_BASE_URL).buildUpon()
+                .appendPath(sortBy)
                 .appendQueryParameter("api_key", apiKey)
-                .appendQueryParameter("language", "en-US")
-                .appendQueryParameter("sort_by", sortBy)
-                .appendQueryParameter("page", "1")
                 .build();
         try {
             url = new URL(builtUri.toString());
@@ -51,6 +50,7 @@ public class NetworkUtils {
     public static String getResponseFromHttpUrl(URL url) throws IOException {
         HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
         try {
+            System.out.println("network call");
             InputStream in = urlConnection.getInputStream();
 
             Scanner scanner = new Scanner(in);
@@ -66,4 +66,12 @@ public class NetworkUtils {
             urlConnection.disconnect();
         }
     }
+
+
+    public static boolean isNetworkAvailable(Context context) {
+        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
+
 }

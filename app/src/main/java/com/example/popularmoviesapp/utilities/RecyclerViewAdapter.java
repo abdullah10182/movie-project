@@ -71,6 +71,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         intent.putExtra("movieTitle", movieData.getTitle());
         intent.putExtra("description", movieData.getDescription());
         intent.putExtra("rating", movieData.getUserRating());
+        intent.putExtra("releaseDate", movieData.getReleaseDate());
         mContext.startActivity(intent);
     }
 

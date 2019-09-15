@@ -1,7 +1,5 @@
 package com.example.popularmoviesapp.utilities;
 
-import android.content.Context;
-
 import com.example.popularmoviesapp.model.MovieItem;
 
 import org.json.JSONArray;
@@ -12,7 +10,7 @@ import java.util.ArrayList;
 
 public class MovieDbJsonUtils {
 
-    public static  ArrayList<MovieItem> getArrayListMovieItems(Context context, String jsonStr) throws  JSONException {
+    public static  ArrayList<MovieItem> getArrayListMovieItems(String jsonStr) throws  JSONException {
         ArrayList<MovieItem> movieItems = new ArrayList<>();
         String prefixPosterUrl = "https://image.tmdb.org/t/p/w185/";
         String prefixBackdropImageUrl = "https://image.tmdb.org/t/p/w500/";
@@ -27,7 +25,8 @@ public class MovieDbJsonUtils {
             String description = resultObject.getString("overview");
             String backdropImage = prefixBackdropImageUrl + resultObject.getString("backdrop_path");
             String userRating = resultObject.getString("vote_average");
-            MovieItem movieItem = new MovieItem(title, poster, description, backdropImage, userRating);
+            String releaseDate = resultObject.getString("release_date");
+            MovieItem movieItem = new MovieItem(title, poster, description, backdropImage, userRating, releaseDate);
             movieItems.add(movieItem);
         }
 
