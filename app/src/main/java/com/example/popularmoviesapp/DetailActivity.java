@@ -71,7 +71,7 @@ public class DetailActivity extends AppCompatActivity {
         adapterReviews = new RecyclerViewReviewsAdapter(DetailActivity.this, mReviews);
         mRecyclerViewReviews.setAdapter(adapterReviews);
 
-        RecyclerView.LayoutManager layoutManagerTrailers = new LinearLayoutManager(DetailActivity.this);
+        RecyclerView.LayoutManager layoutManagerTrailers = new GridLayoutManager(DetailActivity.this,2);
         mRecyclerViewTrailers.setLayoutManager(layoutManagerTrailers);
         adapterTrailers = new RecyclerViewTrailersAdapter(DetailActivity.this, mTrailers);
         mRecyclerViewTrailers.setAdapter(adapterTrailers);

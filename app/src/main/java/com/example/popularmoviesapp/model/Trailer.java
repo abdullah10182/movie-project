@@ -2,20 +2,24 @@ package com.example.popularmoviesapp.model;
 
 public class Trailer {
 
-    private String movieTitle;
+    private String name;
     private String source;
     private String size;
     private String type;
+    private String thumbnail;
+    private String youtubeLink;
 
-    public Trailer(String movieTitle, String source, String size, String type) {
-        this.movieTitle = movieTitle;
+    public Trailer(String name, String source, String size, String type) {
+        this.name = name;
         this.source = source;
         this.size = size;
         this.type = type;
+        this.thumbnail = "https://img.youtube.com/vi/"+source+"/mqdefault.jpg";
+        this.youtubeLink = "https://www.youtube.com/watch?v="+source;
     }
 
-    public String getMovieTitle() {
-        return movieTitle;
+    public String getName() {
+        return name;
     }
 
     public String getSource() {
@@ -28,5 +32,13 @@ public class Trailer {
 
     public String getType() {
         return type;
+    }
+
+    public String getThumbnail() {
+        return thumbnail;
+    }
+
+    public String getYoutubeLink() {
+        return youtubeLink;
     }
 }

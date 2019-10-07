@@ -10,6 +10,7 @@ import android.widget.TextView;
 public class ReviewDetailActivity extends AppCompatActivity {
 
     TextView mContent;
+    TextView mReviewBy;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -17,6 +18,7 @@ public class ReviewDetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_review_detail);
 
         mContent = findViewById(R.id.tv_review_detail_content);
+        mReviewBy = findViewById(R.id.tv_review_by);
 
         Intent intent = getIntent();
         String content = intent.getStringExtra("content");
@@ -24,9 +26,9 @@ public class ReviewDetailActivity extends AppCompatActivity {
 
         ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
-        actionBar.setTitle("Review: " + intent.getStringExtra("author"));
+        actionBar.setTitle("Review: " + intent.getStringExtra("movieTitle"));
 
-        System.out.println(intent.getStringExtra("movieTitle"));
+        mReviewBy.setText("Reviewed by: " + intent.getStringExtra("author"));
 
     }
 

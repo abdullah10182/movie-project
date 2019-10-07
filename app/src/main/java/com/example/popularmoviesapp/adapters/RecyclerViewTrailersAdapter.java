@@ -1,18 +1,20 @@
 package com.example.popularmoviesapp.adapters;
 
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
-import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.popularmoviesapp.R;
 import com.example.popularmoviesapp.model.Trailer;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +36,6 @@ public class RecyclerViewTrailersAdapter extends RecyclerView.Adapter<RecyclerVi
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        System.out.println("onCreateViewHolder");
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.trailer_item, parent, false);
         ViewHolder viewholder = new ViewHolder(view);
         return viewholder;
@@ -42,15 +43,14 @@ public class RecyclerViewTrailersAdapter extends RecyclerView.Adapter<RecyclerVi
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
-        System.out.println("------>" + mTrailers.get(position).getMovieTitle());
-        holder.source.setText(mTrailers.get(position).getSource());
-//        holder.source.setOnClickListener(new View.OnClickListener(){
-//
-//            @Override
-//            public void onClick(View view) {
-//            launchTrailerDetailActivity(mTrailers.get(position));
-//            }
-//        });
+        holder.name.setText(mTrailers.get(position).getName());
+        Picasso.get().load(mTrailers.get(position).getThumbnail()).fit().centerInside().into(holder.trailerThumbnail);
+        holder.trailerThumbnail.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view) {
+                launchTrailerDetailActivity(mTrailers.get(position));
+            }
+        });
 
     }
 
@@ -60,12 +60,15 @@ public class RecyclerViewTrailersAdapter extends RecyclerView.Adapter<RecyclerVi
     }
 
     private void launchTrailerDetailActivity(Trailer trailer) {
-        System.out.println(trailer.getMovieTitle());
-//        Intent intent = new Intent(mContext, ReviewDetailActivity.class);
-//        intent.putExtra("content", trailer.getContent());
-//        intent.putExtra("author", trailer.getAuthor());
-//        intent.putExtra("movieTitle", trailer.getMovieTitle());
-//        mContext.startActivity(intent);
+        System.out.println(trailer.getName());
+        Intent appIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:" + trailer.getSource()));
+        Intent webIntent = new Intent(Intent.ACTION_VIEW,
+                Uri.parse("http://www.youtube.com/watch?v=" + trailer.getSource()));
+        try {
+            mContext.startActivity(appIntent);
+        } catch (ActivityNotFoundException ex) {
+            mContext.startActivity(webIntent);
+        }
     }
 
     @Override
@@ -75,12 +78,13 @@ public class RecyclerViewTrailersAdapter extends RecyclerView.Adapter<RecyclerVi
 
     public class ViewHolder extends RecyclerView.ViewHolder{
 
-        TextView source;
+        TextView name;
+        ImageView trailerThumbnail;
 
         public ViewHolder(View itemView) {
             super(itemView);
-            System.out.println("viewholder");
-            source = itemView.findViewById(R.id.tv_trailer_source);
+            name = itemView.findViewById(R.id.tv_trailer_name);
+            trailerThumbnail = itemView.findViewById(R.id.iv_trailer_thumbnail);
 
         }
     }
