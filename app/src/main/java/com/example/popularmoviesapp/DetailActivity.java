@@ -43,8 +43,10 @@ public class DetailActivity extends AppCompatActivity {
     private RecyclerViewReviewsAdapter adapterReviews;
     private RecyclerViewTrailersAdapter adapterTrailers;
     private ProgressBar mProgressBar;
-    private int mMovieId;
+    private String mMovieId;
     private Context mContext;
+    private boolean reviewsLoaded = false;
+    private boolean trailersLoaded = false;
 
     ArrayList<Review> mReviews = new ArrayList<>();
     ArrayList<Trailer> mTrailers = new ArrayList<>();
@@ -97,7 +99,7 @@ public class DetailActivity extends AppCompatActivity {
         fetchMovieDetails(mMovieId);
     }
 
-    private void fetchMovieDetails(int id){
+    private void fetchMovieDetails(String id){
         URL movieReviewsEndpointUrl = NetworkUtils.buildDetailPageUrls(this, id, "reviews");
         URL movieTrailersEndpointUrl = NetworkUtils.buildDetailPageUrls(this, id, "trailers");
         if(NetworkUtils.isNetworkAvailable(DetailActivity.this)){
@@ -110,7 +112,7 @@ public class DetailActivity extends AppCompatActivity {
     }
 
     private void displayTrailersAndReviewsIfReady() {
-        if(mReviews.size() > 0 && mTrailers.size() > 0){
+        if(trailersLoaded && reviewsLoaded){
             mRecyclerViewReviews.setVisibility(View.VISIBLE);
             mRecyclerViewTrailers.setVisibility(View.VISIBLE);
             mProgressBar.setVisibility(View.INVISIBLE);
@@ -146,6 +148,7 @@ public class DetailActivity extends AppCompatActivity {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                reviewsLoaded = true;
                 displayTrailersAndReviewsIfReady();
             } else {
                 //fail
@@ -176,6 +179,7 @@ public class DetailActivity extends AppCompatActivity {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                trailersLoaded = true;
                 displayTrailersAndReviewsIfReady();
             } else {
                 //fail

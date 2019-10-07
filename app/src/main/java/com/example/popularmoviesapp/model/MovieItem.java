@@ -1,15 +1,23 @@
 package com.example.popularmoviesapp.model;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+
 import java.io.Serializable;
 
+@Entity(tableName = "movie_item_table")
 public class MovieItem implements Serializable {
+    @PrimaryKey
+    @NonNull
+    private String id;
     private String title;
     private String poster;
     private String description;
     private String backdropImage;
     private String userRating;
     private String releaseDate;
-    private int id;
 
 
     public MovieItem(String title, String poster, String description, String backdropImage, String userRating, String releaseDate, String id) {
@@ -19,7 +27,7 @@ public class MovieItem implements Serializable {
         this.backdropImage = backdropImage;
         this.userRating = userRating;
         this.releaseDate = releaseDate;
-        this.id = Integer.parseInt(id);
+        this.id = id;
     }
 
     public String getTitle() {
@@ -46,6 +54,6 @@ public class MovieItem implements Serializable {
         return releaseDate;
     }
 
-    public int getId() { return id; }
+    public String getId() { return id; }
 
 }
