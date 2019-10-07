@@ -4,6 +4,8 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.view.View;
+import android.widget.Toast;
 
 import com.example.popularmoviesapp.R;
 
@@ -13,9 +15,6 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Scanner;
-
-import static android.content.Context.*;
-import static androidx.core.content.ContextCompat.getSystemService;
 
 public class NetworkUtils {
 
@@ -40,13 +39,26 @@ public class NetworkUtils {
         return url;
     }
 
-    /**
-     * This method returns the entire result from the HTTP response.
-     *
-     * @param url The URL to fetch the HTTP response from.
-     * @return The contents of the HTTP response.
-     * @throws IOException Related to network and stream reading
-     */
+    public static URL buildDetailPageUrls(Context context, int movieId, String type) {
+        URL url = null;
+        String apiKey = context.getResources().getString(R.string.the_moviedb_api_key);
+        String movieIdString = Integer.toString(movieId);
+
+        Uri builtUri = Uri.parse(MOVIE_DB_BASE_URL).buildUpon()
+                .appendPath(movieIdString)
+                .appendPath(type)
+                .appendQueryParameter("api_key", apiKey)
+                .build();
+        try {
+            url = new URL(builtUri.toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
+        return url;
+    }
+
+
     public static String getResponseFromHttpUrl(URL url) throws IOException {
         HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
         try {
@@ -72,6 +84,10 @@ public class NetworkUtils {
         ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
+
+    public static void connectionFailed(Context context) {
+        Toast.makeText(context, "No connection to the internet", Toast.LENGTH_LONG).show();
     }
 
 }

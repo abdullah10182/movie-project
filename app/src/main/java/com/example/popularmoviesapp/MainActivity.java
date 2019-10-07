@@ -5,9 +5,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.content.Context;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.StrictMode;
@@ -22,7 +19,7 @@ import android.widget.Toast;
 import com.example.popularmoviesapp.model.MovieItem;
 import com.example.popularmoviesapp.utilities.MovieDbJsonUtils;
 import com.example.popularmoviesapp.utilities.NetworkUtils;
-import com.example.popularmoviesapp.utilities.RecyclerViewAdapter;
+import com.example.popularmoviesapp.adapters.RecyclerViewMovieItemsAdapter;
 
 import org.json.JSONException;
 
@@ -30,12 +27,10 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 
-import static androidx.core.content.ContextCompat.getSystemService;
-
 public class MainActivity extends AppCompatActivity {
     ArrayList<MovieItem> mMovieItems = new ArrayList<>();
     RecyclerView mRecyclerView;
-    RecyclerViewAdapter adapter;
+    RecyclerViewMovieItemsAdapter adapter;
     ProgressBar mProgressBar;
     Button mRetryBtn;
 
@@ -55,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
         mRetryBtn = findViewById(R.id.btn_retry);
         RecyclerView.LayoutManager layoutManager = new GridLayoutManager(MainActivity.this,2);
         mRecyclerView.setLayoutManager(layoutManager);
-        adapter = new RecyclerViewAdapter(MainActivity.this, mMovieItems);
+        adapter = new RecyclerViewMovieItemsAdapter(MainActivity.this, mMovieItems);
         mRecyclerView.setAdapter(adapter);
 
         //initialize data fetching
@@ -89,9 +84,9 @@ public class MainActivity extends AppCompatActivity {
     private void fetchMovieData(String sortBy) {
         mRecyclerView.setVisibility(View.INVISIBLE);
         mProgressBar.setVisibility(View.VISIBLE);
-        URL githubSearchUrl = NetworkUtils.buildUrl(this, sortBy);
+        URL movieDataEndpointUrl = NetworkUtils.buildUrl(this, sortBy);
         if(NetworkUtils.isNetworkAvailable(MainActivity.this)){
-            new MovieDbQueryTask().execute(githubSearchUrl);
+            new MovieDbQueryTask().execute(movieDataEndpointUrl);
         } else {
             connectionFailed();
         }
@@ -110,13 +105,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     class MovieDbQueryTask extends AsyncTask<URL, Void, String> {
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-//            mRecyclerView.setVisibility(View.INVISIBLE);
-//            mProgressBar.setVisibility(View.VISIBLE);
-        }
 
         @Override
         protected String doInBackground(URL... urls) {

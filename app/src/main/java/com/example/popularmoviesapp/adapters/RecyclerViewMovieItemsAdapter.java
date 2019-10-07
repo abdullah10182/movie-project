@@ -1,4 +1,4 @@
-package com.example.popularmoviesapp.utilities;
+package com.example.popularmoviesapp.adapters;
 
 import android.content.Context;
 import android.content.Intent;
@@ -7,12 +7,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.popularmoviesapp.DetailActivity;
-import com.example.popularmoviesapp.MainActivity;
 import com.example.popularmoviesapp.R;
 import com.example.popularmoviesapp.model.MovieItem;
 import com.squareup.picasso.Picasso;
@@ -23,16 +20,16 @@ import java.util.List;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
-public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder>{
+public class RecyclerViewMovieItemsAdapter extends RecyclerView.Adapter<RecyclerViewMovieItemsAdapter.ViewHolder>{
 
-    private static final String TAG = "RecyclerViewAdapter";
+    private static final String TAG = "RecyclerViewMovieItemsAdapter";
 
     private ArrayList<String> mTitles;
     private ArrayList<String> mPosters;
     private List<MovieItem> mMovieItems;
     private Context mContext;
 
-    public RecyclerViewAdapter(Context mContext, ArrayList<MovieItem> movieItems) {
+    public RecyclerViewMovieItemsAdapter(Context mContext, ArrayList<MovieItem> movieItems) {
 //        this.mTitles = mTitles;
 //        this.mPosters = mPosters;
         this.mMovieItems = movieItems;
@@ -57,21 +54,14 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
             @Override
             public void onClick(View view) {
-               // Log.d(TAG, "onClick: " + mMovieItems.get(position).getDescription());
-               // Toast.makeText(mContext, mMovieItems.get(position).getDescription(), Toast.LENGTH_SHORT).show();
                 launchDetailActivity(mMovieItems.get(position));
             }
         });
     }
 
     public void launchDetailActivity(MovieItem movieData) {
-        System.out.println(movieData.getTitle());
         Intent intent = new Intent(mContext, DetailActivity.class);
-        intent.putExtra("movieBackdropImage", movieData.getBackdropImage());
-        intent.putExtra("movieTitle", movieData.getTitle());
-        intent.putExtra("description", movieData.getDescription());
-        intent.putExtra("rating", movieData.getUserRating());
-        intent.putExtra("releaseDate", movieData.getReleaseDate());
+        intent.putExtra("movieItem", movieData);
         mContext.startActivity(intent);
     }
 
