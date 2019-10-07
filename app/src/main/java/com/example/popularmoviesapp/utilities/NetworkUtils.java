@@ -62,7 +62,7 @@ public class NetworkUtils {
     public static String getResponseFromHttpUrl(URL url) throws IOException {
         HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
         try {
-            System.out.println("network call");
+            System.out.println("network call: " + url);
             InputStream in = urlConnection.getInputStream();
 
             Scanner scanner = new Scanner(in);

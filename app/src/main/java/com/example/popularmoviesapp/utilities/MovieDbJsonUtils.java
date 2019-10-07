@@ -2,6 +2,7 @@ package com.example.popularmoviesapp.utilities;
 
 import com.example.popularmoviesapp.model.MovieItem;
 import com.example.popularmoviesapp.model.Review;
+import com.example.popularmoviesapp.model.Trailer;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -51,6 +52,24 @@ public class MovieDbJsonUtils {
             reviews.add(review);
         }
         return reviews;
+    }
+
+    public static ArrayList<Trailer> getArrayListMovieTrailers(String jsonStr) throws JSONException {
+        ArrayList<Trailer> trailers = new ArrayList<>();
+
+        JSONObject jsonObj = new JSONObject(jsonStr);
+        JSONArray resultsArray = jsonObj.getJSONArray("youtube");
+
+        for (int i = 0; i < resultsArray.length(); i++) {
+            JSONObject resultObject = resultsArray.getJSONObject(i);
+            String movieTitle = resultObject.getString("name");
+            String size = resultObject.getString("size");
+            String source = resultObject.getString("source");
+            String type = resultObject.getString("type");
+            Trailer trailer = new Trailer(movieTitle, source, size, type);
+            trailers.add(trailer);
+        }
+        return trailers;
     }
 
 }

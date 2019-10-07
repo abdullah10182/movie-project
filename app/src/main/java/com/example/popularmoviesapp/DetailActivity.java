@@ -3,6 +3,7 @@ package com.example.popularmoviesapp;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
@@ -11,12 +12,15 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.popularmoviesapp.adapters.RecyclerViewReviewsAdapter;
+import com.example.popularmoviesapp.adapters.RecyclerViewTrailersAdapter;
 import com.example.popularmoviesapp.model.MovieItem;
 import com.example.popularmoviesapp.model.Review;
+import com.example.popularmoviesapp.model.Trailer;
 import com.example.popularmoviesapp.utilities.MovieDbJsonUtils;
 import com.example.popularmoviesapp.utilities.NetworkUtils;
 import com.squareup.picasso.Picasso;
@@ -34,13 +38,16 @@ public class DetailActivity extends AppCompatActivity {
     private TextView userRating;
     private TextView title;
     private TextView releaseDate;
-    private RecyclerView mRecyclerView;
-    private RecyclerViewReviewsAdapter adapter;
+    private RecyclerView mRecyclerViewReviews;
+    private RecyclerView mRecyclerViewTrailers;
+    private RecyclerViewReviewsAdapter adapterReviews;
+    private RecyclerViewTrailersAdapter adapterTrailers;
     private ProgressBar mProgressBar;
     private int mMovieId;
     private Context mContext;
 
     ArrayList<Review> mReviews = new ArrayList<>();
+    ArrayList<Trailer> mTrailers = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,16 +59,23 @@ public class DetailActivity extends AppCompatActivity {
         description = findViewById(R.id.tv_description_text);
         userRating = findViewById(R.id.tv_user_rating);
         releaseDate = findViewById(R.id.tv_release_date);
+        mContext = this;
+        mProgressBar = findViewById(R.id.pb_reviews);
+        mRecyclerViewReviews = findViewById(R.id.rv_reviews);
+        mRecyclerViewTrailers = findViewById(R.id.rv_trailers);
 
         populateDetailUi();
 
-        mRecyclerView = findViewById(R.id.rv_reviews);
-        RecyclerView.LayoutManager layoutManager = new GridLayoutManager(DetailActivity.this,2);
-        mRecyclerView.setLayoutManager(layoutManager);
-        adapter = new RecyclerViewReviewsAdapter(DetailActivity.this, mReviews);
-        mRecyclerView.setAdapter(adapter);
-        mProgressBar = findViewById(R.id.pb_reviews);
-        mContext = this;
+        RecyclerView.LayoutManager layoutManagerReviews = new GridLayoutManager(DetailActivity.this,2);
+        mRecyclerViewReviews.setLayoutManager(layoutManagerReviews);
+        adapterReviews = new RecyclerViewReviewsAdapter(DetailActivity.this, mReviews);
+        mRecyclerViewReviews.setAdapter(adapterReviews);
+
+        RecyclerView.LayoutManager layoutManagerTrailers = new LinearLayoutManager(DetailActivity.this);
+        mRecyclerViewTrailers.setLayoutManager(layoutManagerTrailers);
+        adapterTrailers = new RecyclerViewTrailersAdapter(DetailActivity.this, mTrailers);
+        mRecyclerViewTrailers.setAdapter(adapterTrailers);
+
 
     }
 
@@ -85,12 +99,22 @@ public class DetailActivity extends AppCompatActivity {
 
     private void fetchMovieDetails(int id){
         URL movieReviewsEndpointUrl = NetworkUtils.buildDetailPageUrls(this, id, "reviews");
+        URL movieTrailersEndpointUrl = NetworkUtils.buildDetailPageUrls(this, id, "trailers");
         if(NetworkUtils.isNetworkAvailable(DetailActivity.this)){
             new MovieDbQueryTask().execute(movieReviewsEndpointUrl);
+            new MovieDbQueryTaskTrailers().execute(movieTrailersEndpointUrl);
         } else {
             //fail
         }
 
+    }
+
+    private void displayTrailersAndReviewsIfReady() {
+        if(mReviews.size() > 0 && mTrailers.size() > 0){
+            mRecyclerViewReviews.setVisibility(View.VISIBLE);
+            mRecyclerViewTrailers.setVisibility(View.VISIBLE);
+            mProgressBar.setVisibility(View.INVISIBLE);
+        }
     }
 
     @Override
@@ -115,17 +139,14 @@ public class DetailActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String jsonString) {
             if(jsonString != null && !jsonString.equals("")) {
-//                mRecyclerView.setVisibility(View.VISIBLE);
-//                mProgressBar.setVisibility(View.INVISIBLE);
                 try {
                    mReviews = MovieDbJsonUtils.getArrayListMovieReviews(jsonString, (String) title.getText());
-                   adapter.setReviewsList(mReviews);
-                   adapter.notifyDataSetChanged();
-                   URL movieTrailersEndpointUrl = NetworkUtils.buildDetailPageUrls(mContext, mMovieId, "trailers");
-                   new MovieDbQueryTaskTrailers().execute(movieTrailersEndpointUrl);
+                   adapterReviews.setReviewsList(mReviews);
+                   adapterReviews.notifyDataSetChanged();
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                displayTrailersAndReviewsIfReady();
             } else {
                 //fail
             }
@@ -148,16 +169,14 @@ public class DetailActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String jsonString) {
             if(jsonString != null && !jsonString.equals("")) {
-                mRecyclerView.setVisibility(View.VISIBLE);
-                mProgressBar.setVisibility(View.INVISIBLE);
-                System.out.println(jsonString);
-//                try {
-////                    mReviews = MovieDbJsonUtils.getArrayListMovieReviews(jsonString, (String) title.getText());
-////                    adapter.setReviewsList(mReviews);
-////                    adapter.notifyDataSetChanged();
-//                } catch (JSONException e) {
-//                    e.printStackTrace();
-//                }
+                try {
+                    mTrailers = MovieDbJsonUtils.getArrayListMovieTrailers(jsonString);
+                    adapterTrailers.setTrailersList(mTrailers);
+                    adapterTrailers.notifyDataSetChanged();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                displayTrailersAndReviewsIfReady();
             } else {
                 //fail
             }
