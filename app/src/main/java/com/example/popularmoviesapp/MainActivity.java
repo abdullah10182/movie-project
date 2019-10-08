@@ -75,8 +75,9 @@ public class MainActivity extends AppCompatActivity {
             mSortOrder = sortOrder;
             fetchMoviesBySortOrder(sortOrder);
         } else {
-            fetchMovieData("popular");
+            System.out.println("no savedInstanceState action_sort_popular");
             mSortOrder = "action_sort_popular";
+            fetchMovieData("popular");
         }
 
     }
@@ -91,16 +92,18 @@ public class MainActivity extends AppCompatActivity {
         switch (sortOrder) {
             case "action_sort_popular":
                 fetchMovieData("popular");
+                return;
             case "action_sort_top_rated":
                 fetchMovieData("top_rated");
+                return;
             case "action_sort_favourite":
                 fetchFavouriteMovies();
+                return;
         }
     }
 
     public void fetchFavouriteMovies(){
 
-        //final LiveData<List<MovieItem>> favouriteMovieItems = mDb.favouriteMovieDao().fetchAllMovies();
         MainViewModel viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
         viewModel.getMovieItems().observe(this, new Observer<List<MovieItem>>() {
             @Override
@@ -110,6 +113,11 @@ public class MainActivity extends AppCompatActivity {
                 adapter.notifyDataSetChanged();
             }
         });
+
+        if(!NetworkUtils.isNetworkAvailable(MainActivity.this)) {
+            mRecyclerView.setVisibility(View.VISIBLE);
+            mRetryBtn.setVisibility(View.INVISIBLE);
+        }
     }
 
     @Override
@@ -139,6 +147,7 @@ public class MainActivity extends AppCompatActivity {
                 item.setChecked(true);
                 return true;
             case "action_sort_favourite":
+                mRecyclerView.setVisibility(View.VISIBLE);
                 fetchFavouriteMovies();
                 item.setChecked(true);
                 return true;
@@ -149,6 +158,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void fetchMovieData(String sortBy) {
         mRecyclerView.setVisibility(View.INVISIBLE);
+        mRetryBtn.setVisibility(View.INVISIBLE);
         mProgressBar.setVisibility(View.VISIBLE);
         URL movieDataEndpointUrl = NetworkUtils.buildUrl(this, sortBy);
         if(NetworkUtils.isNetworkAvailable(MainActivity.this)){
@@ -160,14 +170,19 @@ public class MainActivity extends AppCompatActivity {
 
     public void retryFetchData(View view) {
         mRetryBtn.setVisibility(View.INVISIBLE);
-        fetchMovieData("popular");
-
+        //fetchMovieData("popular");
+        fetchMoviesBySortOrder(mSortOrder);
     }
 
     public void connectionFailed() {
         Toast.makeText(getApplicationContext(), "No connection to the internet", Toast.LENGTH_LONG).show();
         mProgressBar.setVisibility(View.INVISIBLE);
-        mRetryBtn.setVisibility(View.VISIBLE);
+        if(mSortOrder == "action_sort_favourite"){
+            mRecyclerView.setVisibility(View.VISIBLE);
+            mRetryBtn.setVisibility(View.INVISIBLE);
+        } else{
+            mRetryBtn.setVisibility(View.VISIBLE);
+        }
     }
 
     class MovieDbQueryTask extends AsyncTask<URL, Void, String> {

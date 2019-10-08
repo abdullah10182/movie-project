@@ -17,6 +17,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.popularmoviesapp.adapters.RecyclerViewReviewsAdapter;
 import com.example.popularmoviesapp.adapters.RecyclerViewTrailersAdapter;
@@ -56,7 +57,11 @@ public class DetailActivity extends AppCompatActivity {
     MovieItem mCurrentMovieItem;
     private boolean movieIsFavourite;
     private Button mFavouriteButton;
-
+    private View dividerTrailers;
+    private View dividerReviews;
+    private TextView tvTitleTrailers;
+    private TextView tvTitleReviews;
+    private Button btnRetryAdditionalData;
 
     ArrayList<Review> mReviews = new ArrayList<>();
     ArrayList<Trailer> mTrailers = new ArrayList<>();
@@ -76,6 +81,11 @@ public class DetailActivity extends AppCompatActivity {
         mRecyclerViewReviews = findViewById(R.id.rv_reviews);
         mRecyclerViewTrailers = findViewById(R.id.rv_trailers);
         mFavouriteButton = findViewById(R.id.btn_favourite);
+        dividerReviews = findViewById(R.id.divider_reviews);
+        dividerTrailers = findViewById(R.id.divider_trailers);
+        tvTitleReviews = findViewById(R.id.tv_title_reviews);
+        tvTitleTrailers = findViewById(R.id.tv_title_trailers);
+        btnRetryAdditionalData = findViewById(R.id.btn_retry_additional_data);
 
         populateDetailUi();
 
@@ -172,17 +182,37 @@ public class DetailActivity extends AppCompatActivity {
             new MovieDbQueryTask().execute(movieReviewsEndpointUrl);
             new MovieDbQueryTaskTrailers().execute(movieTrailersEndpointUrl);
         } else {
-            //fail
+            errorLoadingData();
         }
 
     }
 
     private void displayTrailersAndReviewsIfReady() {
         if(trailersLoaded && reviewsLoaded){
-            mRecyclerViewReviews.setVisibility(View.VISIBLE);
-            mRecyclerViewTrailers.setVisibility(View.VISIBLE);
-            mProgressBar.setVisibility(View.INVISIBLE);
+            hideProgressLoader();
         }
+    }
+
+    public void hideProgressLoader(){
+        mRecyclerViewReviews.setVisibility(View.VISIBLE);
+        mRecyclerViewTrailers.setVisibility(View.VISIBLE);
+        dividerReviews.setVisibility(View.VISIBLE);
+        //dividerTrailers.setVisibility(View.VISIBLE);
+        tvTitleReviews.setVisibility(View.VISIBLE);
+        tvTitleTrailers.setVisibility(View.VISIBLE);
+        mProgressBar.setVisibility(View.INVISIBLE);
+    }
+
+    public void errorLoadingData(){
+        mProgressBar.setVisibility(View.INVISIBLE);
+        btnRetryAdditionalData.setVisibility(View.VISIBLE);
+        Toast.makeText(getApplicationContext(), "No internet connection, cannot retrieve additional movie data", Toast.LENGTH_LONG).show();
+    }
+
+    public void retryFetchData(View view) {
+        btnRetryAdditionalData.setVisibility(View.INVISIBLE);
+        mProgressBar.setVisibility(View.VISIBLE);
+        fetchMovieDetails(mCurrentMovieItem.getId());
     }
 
     @Override
@@ -217,7 +247,8 @@ public class DetailActivity extends AppCompatActivity {
                 reviewsLoaded = true;
                 displayTrailersAndReviewsIfReady();
             } else {
-                //fail
+                hideProgressLoader();
+                errorLoadingData();
             }
         }
     }
@@ -248,7 +279,8 @@ public class DetailActivity extends AppCompatActivity {
                 trailersLoaded = true;
                 displayTrailersAndReviewsIfReady();
             } else {
-                //fail
+                hideProgressLoader();
+                errorLoadingData();
             }
         }
     }
