@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
@@ -94,6 +95,8 @@ public class DetailActivity extends AppCompatActivity {
     }
 
     public void movieIsFavourite(){
+        final Drawable heartBorder = getResources().getDrawable( R.drawable.ic_favorite_border_black_24dp );
+        final Drawable heartFilled = getResources().getDrawable( R.drawable.ic_favorite_orange_24dp );
 
         final LiveData<MovieItem> favouriteMovieDb = mDb.favouriteMovieDao().loadMoviesById(mCurrentMovieItem.getId());
         favouriteMovieDb.observe(this, new Observer<MovieItem>() {
@@ -101,10 +104,14 @@ public class DetailActivity extends AppCompatActivity {
             public void onChanged(MovieItem movieItem) {
                 if(movieItem == null ){
                     movieIsFavourite = false;
-                    mFavouriteButton.setText("false");
+                    //mFavouriteButton.setBackgroundColor(getResources().getColor(R.color.colorAccent));
+                    mFavouriteButton.setCompoundDrawablesWithIntrinsicBounds( heartBorder, null, null, null );
+                    mFavouriteButton.setText("Add to \n favourites");
                 } else {
                     movieIsFavourite = true;
-                    mFavouriteButton.setText("true");
+                    mFavouriteButton.setCompoundDrawablesWithIntrinsicBounds( heartFilled, null, null, null );
+                    //mFavouriteButton.setBackgroundColor(getResources().getColor(R.color.lightGrey));
+                    mFavouriteButton.setText("Favourite");
                 }
             }
         });

@@ -5,12 +5,16 @@ import androidx.appcompat.app.AppCompatActivity;
 //import androidx.lifecycle.ViewModelProviders;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.PersistableBundle;
 import android.os.StrictMode;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -33,11 +37,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
+    private static final String TAG = "MainActivity";
+
     ArrayList<MovieItem> mMovieItems = new ArrayList<>();
     RecyclerView mRecyclerView;
     RecyclerViewMovieItemsAdapter adapter;
     ProgressBar mProgressBar;
     Button mRetryBtn;
+    String mSortOrder;
     private FavouriteMovieDatabase mDb;
 
     @Override
@@ -61,26 +68,46 @@ public class MainActivity extends AppCompatActivity {
 
         mDb = FavouriteMovieDatabase.getInstance(getApplicationContext());
 
+
         //initialize data fetching
-        fetchMovieData("popular");
+        if(savedInstanceState != null && savedInstanceState.getString("sort_order") != null){
+            String sortOrder = savedInstanceState.getString("sort_order");
+            mSortOrder = sortOrder;
+            fetchMoviesBySortOrder(sortOrder);
+        } else {
+            fetchMovieData("popular");
+            mSortOrder = "action_sort_popular";
+        }
 
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString("sort_order", mSortOrder);
+    }
 
+    public void fetchMoviesBySortOrder(String sortOrder) {
+        switch (sortOrder) {
+            case "action_sort_popular":
+                fetchMovieData("popular");
+            case "action_sort_top_rated":
+                fetchMovieData("top_rated");
+            case "action_sort_favourite":
+                fetchFavouriteMovies();
+        }
     }
 
     public void fetchFavouriteMovies(){
-        System.out.println("===========query database=============");
-        final LiveData<List<MovieItem>> favouriteMovieItems = mDb.favouriteMovieDao().fetchAllMovies();
-        favouriteMovieItems.observe(this, new Observer<List<MovieItem>>() {
+
+        //final LiveData<List<MovieItem>> favouriteMovieItems = mDb.favouriteMovieDao().fetchAllMovies();
+        MainViewModel viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
+        viewModel.getMovieItems().observe(this, new Observer<List<MovieItem>>() {
             @Override
             public void onChanged(List<MovieItem> movieItems) {
+                Log.d(TAG, "updating data from LiveData in ViewModel");
                 adapter.setMovieList(movieItems);
                 adapter.notifyDataSetChanged();
-
             }
         });
     }
@@ -93,23 +120,30 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        int resID = getResources().getIdentifier(mSortOrder, "id", getPackageName());
+        menu.findItem(resID).setChecked(true);
+        return true;
+    }
+
+    @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_sort_popular:
+        mSortOrder = getResources().getResourceName(item.getItemId()).split("\\/")[1];
+        switch (mSortOrder) {
+            case "action_sort_popular":
                 fetchMovieData("popular");
                 item.setChecked(true);
                 return true;
-            case R.id.action_sort_top_rated:
+            case "action_sort_top_rated":
                 fetchMovieData("top_rated");
                 item.setChecked(true);
                 return true;
-            case R.id.action_sort_favourite:
+            case "action_sort_favourite":
                 fetchFavouriteMovies();
                 item.setChecked(true);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
-
         }
     }
 
