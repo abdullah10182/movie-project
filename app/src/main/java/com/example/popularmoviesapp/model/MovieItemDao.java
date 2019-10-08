@@ -11,19 +11,19 @@ import androidx.room.Query;
 import androidx.room.Update;
 
 @Dao
-public interface FavouriteMovieDao {
+public interface MovieItemDao {
     @Query("SELECT * FROM favourite_movies ORDER BY id")
-    List<FavouriteMovie> fetchAllMovies();
+    LiveData<List<MovieItem>> fetchAllMovies();
 
     @Insert
-    void insertMovie(FavouriteMovie favouriteMovie);
+    void insertMovie(MovieItem favouriteMovie);
 
     @Update(onConflict = OnConflictStrategy.REPLACE)
-    void updateMovie(FavouriteMovie favouriteMovie);
+    void updateMovie(MovieItem favouriteMovie);
 
     @Delete
-    void deleteMovie(FavouriteMovie FavouriteMovie);
+    void deleteMovie(MovieItem FavouriteMovie);
 
     @Query("SELECT * FROM favourite_movies WHERE id = :id")
-    FavouriteMovie loadMoviesById(int id);
+    LiveData<MovieItem> loadMoviesById(int id);
 }

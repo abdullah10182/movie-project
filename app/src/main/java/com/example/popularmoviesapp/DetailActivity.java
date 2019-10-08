@@ -3,8 +3,8 @@ package com.example.popularmoviesapp;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
@@ -14,13 +14,11 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.popularmoviesapp.adapters.RecyclerViewReviewsAdapter;
 import com.example.popularmoviesapp.adapters.RecyclerViewTrailersAdapter;
-import com.example.popularmoviesapp.model.FavouriteMovie;
 import com.example.popularmoviesapp.model.FavouriteMovieDatabase;
 import com.example.popularmoviesapp.model.MovieItem;
 import com.example.popularmoviesapp.model.Review;
@@ -34,7 +32,6 @@ import org.json.JSONException;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.List;
 
 import static java.lang.Integer.parseInt;
 
@@ -50,12 +47,14 @@ public class DetailActivity extends AppCompatActivity {
     private RecyclerViewReviewsAdapter adapterReviews;
     private RecyclerViewTrailersAdapter adapterTrailers;
     private ProgressBar mProgressBar;
-    private String mMovieId;
+    private int mMovieId;
     private Context mContext;
     private boolean reviewsLoaded = false;
     private boolean trailersLoaded = false;
     private FavouriteMovieDatabase mDb;
     MovieItem mCurrentMovieItem;
+    private boolean movieIsFavourite;
+    private Button mFavouriteButton;
 
 
     ArrayList<Review> mReviews = new ArrayList<>();
@@ -75,6 +74,7 @@ public class DetailActivity extends AppCompatActivity {
         mProgressBar = findViewById(R.id.pb_reviews);
         mRecyclerViewReviews = findViewById(R.id.rv_reviews);
         mRecyclerViewTrailers = findViewById(R.id.rv_trailers);
+        mFavouriteButton = findViewById(R.id.btn_favourite);
 
         populateDetailUi();
 
@@ -89,22 +89,53 @@ public class DetailActivity extends AppCompatActivity {
         mRecyclerViewTrailers.setAdapter(adapterTrailers);
 
         mDb = FavouriteMovieDatabase.getInstance(getApplicationContext());
+        movieIsFavourite();
+
+    }
+
+    public void movieIsFavourite(){
+
+        final LiveData<MovieItem> favouriteMovieDb = mDb.favouriteMovieDao().loadMoviesById(mCurrentMovieItem.getId());
+        favouriteMovieDb.observe(this, new Observer<MovieItem>() {
+            @Override
+            public void onChanged(MovieItem movieItem) {
+                if(movieItem == null ){
+                    movieIsFavourite = false;
+                    mFavouriteButton.setText("false");
+                } else {
+                    movieIsFavourite = true;
+                    mFavouriteButton.setText("true");
+                }
+            }
+        });
 
     }
 
     public void saveFavouriteMovie(View v){
-        int id = parseInt(mCurrentMovieItem.getId());
-        FavouriteMovie favouriteMovie = new FavouriteMovie(id, mCurrentMovieItem.getTitle(), mCurrentMovieItem.getPoster(),
-                mCurrentMovieItem.getDescription(), mCurrentMovieItem.getBackdropImage(),mCurrentMovieItem.getUserRating(), mCurrentMovieItem.getReleaseDate() );
+        final MovieItem favouriteMovie = new MovieItem(
+                mCurrentMovieItem.getId(),
+                mCurrentMovieItem.getTitle(),
+                mCurrentMovieItem.getPoster(),
+                mCurrentMovieItem.getDescription(),
+                mCurrentMovieItem.getBackdropImage(),
+                mCurrentMovieItem.getUserRating(),
+                mCurrentMovieItem.getReleaseDate()
+        );
 
-        FavouriteMovie favouriteMovieDb = mDb.favouriteMovieDao().loadMoviesById(parseInt(mCurrentMovieItem.getId()));
-        if(favouriteMovieDb == null ){
-            System.out.println("empty-----");
-            mDb.favouriteMovieDao().insertMovie(favouriteMovie);
-        } else {
-            System.out.println("else-----");
-            mDb.favouriteMovieDao().deleteMovie(favouriteMovie);
-        }
+
+        AppExecutors.getInstance().diskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                LiveData<MovieItem> favouriteMovieDb = mDb.favouriteMovieDao().loadMoviesById(mCurrentMovieItem.getId());
+                if(movieIsFavourite){
+                    System.out.println("removed from favs");
+                    mDb.favouriteMovieDao().deleteMovie(favouriteMovie);
+                } else {
+                    mDb.favouriteMovieDao().insertMovie(favouriteMovie);
+                    System.out.println("added to favs");
+                }
+            }
+        });
     }
 
     private void populateDetailUi() {
@@ -127,7 +158,7 @@ public class DetailActivity extends AppCompatActivity {
 
     }
 
-    private void fetchMovieDetails(String id){
+    private void fetchMovieDetails(int id){
         URL movieReviewsEndpointUrl = NetworkUtils.buildDetailPageUrls(this, id, "reviews");
         URL movieTrailersEndpointUrl = NetworkUtils.buildDetailPageUrls(this, id, "trailers");
         if(NetworkUtils.isNetworkAvailable(DetailActivity.this)){

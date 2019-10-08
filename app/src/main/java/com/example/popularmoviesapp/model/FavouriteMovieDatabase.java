@@ -6,7 +6,7 @@ import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
 
-@Database(entities = {FavouriteMovie.class}, version = 1, exportSchema = false)
+@Database(entities = {MovieItem.class}, version = 1, exportSchema = false)
 public abstract class FavouriteMovieDatabase extends RoomDatabase {
 
     private static final String LOG_TAG = FavouriteMovieDatabase.class.getSimpleName();
@@ -19,12 +19,12 @@ public abstract class FavouriteMovieDatabase extends RoomDatabase {
             synchronized (LOCK) {
                 sInstance = Room.databaseBuilder(context.getApplicationContext(),
                         FavouriteMovieDatabase.class, FavouriteMovieDatabase.DATABASE_NAME)
-                        .allowMainThreadQueries()///
+                        //.allowMainThreadQueries()///
                         .build();
             }
         }
         return sInstance;
     }
 
-    public abstract FavouriteMovieDao favouriteMovieDao();
+    public abstract MovieItemDao favouriteMovieDao();
 }

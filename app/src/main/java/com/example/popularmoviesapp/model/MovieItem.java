@@ -1,9 +1,14 @@
 package com.example.popularmoviesapp.model;
 import java.io.Serializable;
 
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+
+@Entity(tableName = "favourite_movies")
 public class MovieItem implements Serializable {
 
-    private String id;
+    @PrimaryKey
+    private int id;
     private String title;
     private String poster;
     private String description;
@@ -12,14 +17,15 @@ public class MovieItem implements Serializable {
     private String releaseDate;
 
 
-    public MovieItem(String title, String poster, String description, String backdropImage, String userRating, String releaseDate, String id) {
+    public MovieItem(int id, String title, String poster, String description, String backdropImage, String userRating, String releaseDate ) {
+
+        this.id = id;
         this.title = title;
         this.poster = poster;
         this.description = description;
         this.backdropImage = backdropImage;
         this.userRating = userRating;
         this.releaseDate = releaseDate;
-        this.id = id;
     }
 
     public String getTitle() {
@@ -46,6 +52,6 @@ public class MovieItem implements Serializable {
         return releaseDate;
     }
 
-    public String getId() { return id; }
+    public int getId() { return id; }
 
 }

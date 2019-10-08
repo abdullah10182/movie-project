@@ -10,6 +10,8 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
+import static java.lang.Integer.parseInt;
+
 public class MovieDbJsonUtils {
 
     public static ArrayList<MovieItem> getArrayListMovieItems(String jsonStr) throws JSONException {
@@ -28,8 +30,8 @@ public class MovieDbJsonUtils {
             String backdropImage = prefixBackdropImageUrl + resultObject.getString("backdrop_path");
             String userRating = resultObject.getString("vote_average");
             String releaseDate = resultObject.getString("release_date");
-            String id = resultObject.getString("id");
-            MovieItem movieItem = new MovieItem(title, poster, description, backdropImage, userRating, releaseDate, id);
+            int id = parseInt(resultObject.getString("id"));
+            MovieItem movieItem = new MovieItem(id, title, poster, description, backdropImage, userRating, releaseDate );
             movieItems.add(movieItem);
         }
         return movieItems;

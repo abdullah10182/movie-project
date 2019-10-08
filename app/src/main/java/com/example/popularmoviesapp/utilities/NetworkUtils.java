@@ -39,12 +39,12 @@ public class NetworkUtils {
         return url;
     }
 
-    public static URL buildDetailPageUrls(Context context, String movieId, String type) {
+    public static URL buildDetailPageUrls(Context context, int movieId, String type) {
         URL url = null;
         String apiKey = context.getResources().getString(R.string.the_moviedb_api_key);
 
         Uri builtUri = Uri.parse(MOVIE_DB_BASE_URL).buildUpon()
-                .appendPath(movieId)
+                .appendPath(Integer.toString(movieId))
                 .appendPath(type)
                 .appendQueryParameter("api_key", apiKey)
                 .build();

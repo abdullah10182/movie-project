@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 //import androidx.lifecycle.ViewModelProviders;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -18,7 +19,6 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import com.example.popularmoviesapp.model.FavouriteMovie;
 import com.example.popularmoviesapp.model.FavouriteMovieDatabase;
 import com.example.popularmoviesapp.model.MovieItem;
 import com.example.popularmoviesapp.utilities.MovieDbJsonUtils;
@@ -62,36 +62,27 @@ public class MainActivity extends AppCompatActivity {
         mDb = FavouriteMovieDatabase.getInstance(getApplicationContext());
 
         //initialize data fetching
-        //fetchMovieData("popular");
+        fetchMovieData("popular");
 
-        //movieItemViewModel = ViewModelProviders.of(this).get(MovieItemViewModel.class);
-//        movieItemViewModel.getAllMovieItems().observe(this, new Observer<List<MovieItem>>() {
-//            @Override
-//            public void onChanged(List<MovieItem> movieItems) {
-//                Toast.makeText(MainActivity.this, "test", Toast.LENGTH_SHORT);
-//            }
-//        });
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        List<FavouriteMovie> favouriteMovieItems = mDb.favouriteMovieDao().fetchAllMovies();
-        List<MovieItem> movieItems = new ArrayList<>();
-        for(FavouriteMovie favMovie : favouriteMovieItems) {
-            //MovieItem(String title, String poster, String description, String backdropImage, String userRating, String releaseDate, String id)
-            MovieItem movieItem = new MovieItem(
-                    favMovie.getTitle(),
-                    favMovie.getPoster(),
-                    favMovie.getDescription(),
-                    favMovie.getBackdropImage(),
-                    favMovie.getUserRating(),
-                    favMovie.getReleaseDate(),
-                    Integer.toString(favMovie.getId())
-            );
-            movieItems.add(movieItem);
-        }
-        adapter.setMovieList(movieItems);
+
+    }
+
+    public void fetchFavouriteMovies(){
+        System.out.println("===========query database=============");
+        final LiveData<List<MovieItem>> favouriteMovieItems = mDb.favouriteMovieDao().fetchAllMovies();
+        favouriteMovieItems.observe(this, new Observer<List<MovieItem>>() {
+            @Override
+            public void onChanged(List<MovieItem> movieItems) {
+                adapter.setMovieList(movieItems);
+                adapter.notifyDataSetChanged();
+
+            }
+        });
     }
 
     @Override
@@ -110,6 +101,10 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             case R.id.action_sort_top_rated:
                 fetchMovieData("top_rated");
+                item.setChecked(true);
+                return true;
+            case R.id.action_sort_favourite:
+                fetchFavouriteMovies();
                 item.setChecked(true);
                 return true;
             default:
