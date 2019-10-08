@@ -2,6 +2,7 @@ package com.example.popularmoviesapp;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.LiveData;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -11,6 +12,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -18,6 +20,8 @@ import android.widget.TextView;
 
 import com.example.popularmoviesapp.adapters.RecyclerViewReviewsAdapter;
 import com.example.popularmoviesapp.adapters.RecyclerViewTrailersAdapter;
+import com.example.popularmoviesapp.model.FavouriteMovie;
+import com.example.popularmoviesapp.model.FavouriteMovieDatabase;
 import com.example.popularmoviesapp.model.MovieItem;
 import com.example.popularmoviesapp.model.Review;
 import com.example.popularmoviesapp.model.Trailer;
@@ -30,6 +34,9 @@ import org.json.JSONException;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
+
+import static java.lang.Integer.parseInt;
 
 public class DetailActivity extends AppCompatActivity {
 
@@ -47,6 +54,9 @@ public class DetailActivity extends AppCompatActivity {
     private Context mContext;
     private boolean reviewsLoaded = false;
     private boolean trailersLoaded = false;
+    private FavouriteMovieDatabase mDb;
+    MovieItem mCurrentMovieItem;
+
 
     ArrayList<Review> mReviews = new ArrayList<>();
     ArrayList<Trailer> mTrailers = new ArrayList<>();
@@ -78,12 +88,29 @@ public class DetailActivity extends AppCompatActivity {
         adapterTrailers = new RecyclerViewTrailersAdapter(DetailActivity.this, mTrailers);
         mRecyclerViewTrailers.setAdapter(adapterTrailers);
 
+        mDb = FavouriteMovieDatabase.getInstance(getApplicationContext());
 
+    }
+
+    public void saveFavouriteMovie(View v){
+        int id = parseInt(mCurrentMovieItem.getId());
+        FavouriteMovie favouriteMovie = new FavouriteMovie(id, mCurrentMovieItem.getTitle(), mCurrentMovieItem.getPoster(),
+                mCurrentMovieItem.getDescription(), mCurrentMovieItem.getBackdropImage(),mCurrentMovieItem.getUserRating(), mCurrentMovieItem.getReleaseDate() );
+
+        FavouriteMovie favouriteMovieDb = mDb.favouriteMovieDao().loadMoviesById(parseInt(mCurrentMovieItem.getId()));
+        if(favouriteMovieDb == null ){
+            System.out.println("empty-----");
+            mDb.favouriteMovieDao().insertMovie(favouriteMovie);
+        } else {
+            System.out.println("else-----");
+            mDb.favouriteMovieDao().deleteMovie(favouriteMovie);
+        }
     }
 
     private void populateDetailUi() {
         Intent mIntent = getIntent();
         MovieItem movieItem = (MovieItem) mIntent.getSerializableExtra("movieItem");
+        mCurrentMovieItem = movieItem;
 
         title.setText(movieItem.getTitle());
         description.setText(movieItem.getDescription());
@@ -97,6 +124,7 @@ public class DetailActivity extends AppCompatActivity {
 
         mMovieId = movieItem.getId();
         fetchMovieDetails(mMovieId);
+
     }
 
     private void fetchMovieDetails(String id){

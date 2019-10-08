@@ -2,8 +2,8 @@ package com.example.popularmoviesapp;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProviders;
+//import androidx.lifecycle.ViewModelProviders;
+import androidx.lifecycle.LiveData;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -18,8 +18,9 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.example.popularmoviesapp.model.FavouriteMovie;
+import com.example.popularmoviesapp.model.FavouriteMovieDatabase;
 import com.example.popularmoviesapp.model.MovieItem;
-import com.example.popularmoviesapp.model.MovieItemViewModel;
 import com.example.popularmoviesapp.utilities.MovieDbJsonUtils;
 import com.example.popularmoviesapp.utilities.NetworkUtils;
 import com.example.popularmoviesapp.adapters.RecyclerViewMovieItemsAdapter;
@@ -37,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
     RecyclerViewMovieItemsAdapter adapter;
     ProgressBar mProgressBar;
     Button mRetryBtn;
-    private MovieItemViewModel movieItemViewModel;
+    private FavouriteMovieDatabase mDb;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,16 +59,39 @@ public class MainActivity extends AppCompatActivity {
         adapter = new RecyclerViewMovieItemsAdapter(MainActivity.this, mMovieItems);
         mRecyclerView.setAdapter(adapter);
 
-        //initialize data fetching
-        fetchMovieData("popular");
+        mDb = FavouriteMovieDatabase.getInstance(getApplicationContext());
 
-        movieItemViewModel = ViewModelProviders.of(this).get(MovieItemViewModel.class);
+        //initialize data fetching
+        //fetchMovieData("popular");
+
+        //movieItemViewModel = ViewModelProviders.of(this).get(MovieItemViewModel.class);
 //        movieItemViewModel.getAllMovieItems().observe(this, new Observer<List<MovieItem>>() {
 //            @Override
 //            public void onChanged(List<MovieItem> movieItems) {
 //                Toast.makeText(MainActivity.this, "test", Toast.LENGTH_SHORT);
 //            }
 //        });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        List<FavouriteMovie> favouriteMovieItems = mDb.favouriteMovieDao().fetchAllMovies();
+        List<MovieItem> movieItems = new ArrayList<>();
+        for(FavouriteMovie favMovie : favouriteMovieItems) {
+            //MovieItem(String title, String poster, String description, String backdropImage, String userRating, String releaseDate, String id)
+            MovieItem movieItem = new MovieItem(
+                    favMovie.getTitle(),
+                    favMovie.getPoster(),
+                    favMovie.getDescription(),
+                    favMovie.getBackdropImage(),
+                    favMovie.getUserRating(),
+                    favMovie.getReleaseDate(),
+                    Integer.toString(favMovie.getId())
+            );
+            movieItems.add(movieItem);
+        }
+        adapter.setMovieList(movieItems);
     }
 
     @Override
@@ -138,8 +162,6 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     mMovieItems = MovieDbJsonUtils.getArrayListMovieItems(jsonString);
                     adapter.setMovieList(mMovieItems);
-                    movieItemViewModel.deleteAllMovieItems();
-                    movieItemViewModel.insert(mMovieItems.get(0));
                     adapter.notifyDataSetChanged();
                 } catch (JSONException e) {
                     e.printStackTrace();
