@@ -52,6 +52,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        System.out.println("++++++onCreate+++++");
+
         if (android.os.Build.VERSION.SDK_INT > 9) {
             StrictMode.ThreadPolicy policy = new
                     StrictMode.ThreadPolicy.Builder().permitAll().build();
@@ -68,10 +70,10 @@ public class MainActivity extends AppCompatActivity {
 
         mDb = FavouriteMovieDatabase.getInstance(getApplicationContext());
 
-
         //initialize data fetching
         if(savedInstanceState != null && savedInstanceState.getString("sort_order") != null){
             String sortOrder = savedInstanceState.getString("sort_order");
+            System.out.println(sortOrder + "----");
             mSortOrder = sortOrder;
             fetchMoviesBySortOrder(sortOrder);
         } else {
@@ -103,14 +105,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void fetchFavouriteMovies(){
-
         MainViewModel viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
         viewModel.getMovieItems().observe(this, new Observer<List<MovieItem>>() {
             @Override
             public void onChanged(List<MovieItem> movieItems) {
                 Log.d(TAG, "updating data from LiveData in ViewModel");
-                adapter.setMovieList(movieItems);
-                adapter.notifyDataSetChanged();
+                if(mSortOrder.equals("action_sort_favourite")) {
+                    adapter.setMovieList(movieItems);
+                    adapter.notifyDataSetChanged();
+                }
             }
         });
 
