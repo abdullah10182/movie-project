@@ -37,6 +37,24 @@ public class MovieDbJsonUtils {
         return movieItems;
     }
 
+    public static ArrayList<MovieItem> getArrayListMovieItemsSavedState(String jsonStr) throws JSONException {
+        ArrayList<MovieItem> movieItems = new ArrayList<>();
+        JSONArray resultsArray = new JSONArray(jsonStr);
+        for (int i = 0; i < resultsArray.length(); i++) {
+            JSONObject resultObject = resultsArray.getJSONObject(i);
+            String title = resultObject.getString("title");
+            String poster = resultObject.getString("poster");
+            String description = resultObject.getString("description");
+            String backdropImage = resultObject.getString("backdropImage");
+            String userRating = resultObject.getString("userRating");
+            String releaseDate = resultObject.getString("releaseDate");
+            int id = parseInt(resultObject.getString("id"));
+            MovieItem movieItem = new MovieItem(id, title, poster, description, backdropImage, userRating, releaseDate );
+            movieItems.add(movieItem);
+        }
+        return movieItems;
+    }
+
     public static ArrayList<Review> getArrayListMovieReviews(String jsonStr, String movieTitle) throws JSONException {
         ArrayList<Review> reviews = new ArrayList<>();
 

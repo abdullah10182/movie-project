@@ -1,4 +1,6 @@
 package com.example.popularmoviesapp.model;
+import android.os.Parcelable;
+
 import java.io.Serializable;
 
 import androidx.room.Entity;

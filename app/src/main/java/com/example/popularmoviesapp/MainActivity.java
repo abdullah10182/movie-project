@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.os.PersistableBundle;
 import android.os.StrictMode;
 import android.util.Log;
@@ -28,6 +29,7 @@ import com.example.popularmoviesapp.model.MovieItem;
 import com.example.popularmoviesapp.utilities.MovieDbJsonUtils;
 import com.example.popularmoviesapp.utilities.NetworkUtils;
 import com.example.popularmoviesapp.adapters.RecyclerViewMovieItemsAdapter;
+import com.google.gson.Gson;
 
 import org.json.JSONException;
 
@@ -39,12 +41,16 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
 
-    ArrayList<MovieItem> mMovieItems = new ArrayList<>();
-    RecyclerView mRecyclerView;
-    RecyclerViewMovieItemsAdapter adapter;
-    ProgressBar mProgressBar;
-    Button mRetryBtn;
-    String mSortOrder;
+    private ArrayList<MovieItem> mMovieItems = new ArrayList<>();
+    private RecyclerView mRecyclerView;
+    private RecyclerViewMovieItemsAdapter adapter;
+    private ProgressBar mProgressBar;
+    private Button mRetryBtn;
+    private String mSortOrder;
+    private Bundle mSavedInstanceState;
+    private RecyclerView.LayoutManager mLayoutManager;
+    private Parcelable mListState;
+
     private FavouriteMovieDatabase mDb;
 
     @Override
@@ -52,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        System.out.println("++++++onCreate+++++");
+        System.out.println("-------- onCreate ---------");
 
         if (android.os.Build.VERSION.SDK_INT > 9) {
             StrictMode.ThreadPolicy policy = new
@@ -63,8 +69,8 @@ public class MainActivity extends AppCompatActivity {
         mRecyclerView = findViewById(R.id.rv_listview);
         mProgressBar = findViewById(R.id.pb_progressbar);
         mRetryBtn = findViewById(R.id.btn_retry);
-        RecyclerView.LayoutManager layoutManager = new GridLayoutManager(MainActivity.this,2);
-        mRecyclerView.setLayoutManager(layoutManager);
+        mLayoutManager = new GridLayoutManager(MainActivity.this,2);
+        mRecyclerView.setLayoutManager(mLayoutManager);
         adapter = new RecyclerViewMovieItemsAdapter(MainActivity.this, mMovieItems);
         mRecyclerView.setAdapter(adapter);
 
@@ -72,22 +78,38 @@ public class MainActivity extends AppCompatActivity {
 
         //initialize data fetching
         if(savedInstanceState != null && savedInstanceState.getString("sort_order") != null){
+            mSavedInstanceState = savedInstanceState;
             String sortOrder = savedInstanceState.getString("sort_order");
-            System.out.println(sortOrder + "----");
+            System.out.println(sortOrder);
+            String movieItemsString = savedInstanceState.getString("movie_items");
             mSortOrder = sortOrder;
-            fetchMoviesBySortOrder(sortOrder);
+
+            if(!sortOrder.equals("action_sort_favourite")) {
+                try{
+                    mMovieItems = MovieDbJsonUtils.getArrayListMovieItemsSavedState(movieItemsString);
+                    adapter.setMovieList(mMovieItems);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            } else if (sortOrder.equals("action_sort_favourite")) {
+                fetchFavouriteMovies();
+            }
+            //fetchMoviesBySortOrder(sortOrder);
         } else {
             System.out.println("no savedInstanceState action_sort_popular");
             mSortOrder = "action_sort_popular";
             fetchMovieData("popular");
         }
-
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putString("sort_order", mSortOrder);
+        //outState.putParcelableArrayList("movies_list", mMovieItems);
+        //outState.putParcelable("ListState", mRecyclerView.getLayoutManager().onSaveInstanceState());
+        Gson gson = new Gson();
+        outState.putString("movie_items", gson.toJson(mMovieItems));
     }
 
     public void fetchMoviesBySortOrder(String sortOrder) {
@@ -140,6 +162,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         mSortOrder = getResources().getResourceName(item.getItemId()).split("\\/")[1];
+        mRecyclerView.smoothScrollToPosition(0);
         switch (mSortOrder) {
             case "action_sort_popular":
                 fetchMovieData("popular");
