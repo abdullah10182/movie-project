@@ -45,7 +45,7 @@ public class RecyclerViewMovieItemsAdapter extends RecyclerView.Adapter<Recycler
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
-        Log.d(TAG, "onBindViewHolder: called.");
+        //Log.d(TAG, "onBindViewHolder: called.");
 
         holder.title.setText(mMovieItems.get(position).getTitle());
         Picasso.get().load(mMovieItems.get(position).getPoster()).fit().centerInside().into(holder.poster);
@@ -66,7 +66,7 @@ public class RecyclerViewMovieItemsAdapter extends RecyclerView.Adapter<Recycler
     }
 
     public void setMovieList(List<MovieItem> movieList) {
-        this.mMovieItems = movieList;
+        this.mMovieItems.addAll(movieList);
     }
 
 

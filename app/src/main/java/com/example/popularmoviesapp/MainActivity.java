@@ -7,6 +7,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
+
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -47,9 +48,11 @@ public class MainActivity extends AppCompatActivity {
     private ProgressBar mProgressBar;
     private Button mRetryBtn;
     private String mSortOrder;
-    private Bundle mSavedInstanceState;
-    private RecyclerView.LayoutManager mLayoutManager;
-    private Parcelable mListState;
+    //private Bundle mSavedInstanceState;
+    private GridLayoutManager mLayoutManager;
+
+    private boolean reachedBottom = true;
+    int pastVisiblesItems, visibleItemCount, totalItemCount;
 
     private FavouriteMovieDatabase mDb;
 
@@ -70,15 +73,17 @@ public class MainActivity extends AppCompatActivity {
         mProgressBar = findViewById(R.id.pb_progressbar);
         mRetryBtn = findViewById(R.id.btn_retry);
         mLayoutManager = new GridLayoutManager(MainActivity.this,2);
+        //mLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(mLayoutManager);
         adapter = new RecyclerViewMovieItemsAdapter(MainActivity.this, mMovieItems);
         mRecyclerView.setAdapter(adapter);
+
 
         mDb = FavouriteMovieDatabase.getInstance(getApplicationContext());
 
         //initialize data fetching
         if(savedInstanceState != null && savedInstanceState.getString("sort_order") != null){
-            mSavedInstanceState = savedInstanceState;
+            //mSavedInstanceState = savedInstanceState;
             String sortOrder = savedInstanceState.getString("sort_order");
             System.out.println(sortOrder);
             String movieItemsString = savedInstanceState.getString("movie_items");
@@ -100,6 +105,8 @@ public class MainActivity extends AppCompatActivity {
             mSortOrder = "action_sort_popular";
             fetchMovieData("popular");
         }
+
+        scrollListener();
     }
 
     @Override
@@ -135,6 +142,7 @@ public class MainActivity extends AppCompatActivity {
                 if(mSortOrder.equals("action_sort_favourite")) {
                     adapter.setMovieList(movieItems);
                     adapter.notifyDataSetChanged();
+                    //adapter.notifyItemInserted(mMovieItems.size() - 1);
                 }
             }
         });
@@ -163,6 +171,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         mSortOrder = getResources().getResourceName(item.getItemId()).split("\\/")[1];
         mRecyclerView.smoothScrollToPosition(0);
+        reachedBottom = true;
         switch (mSortOrder) {
             case "action_sort_popular":
                 fetchMovieData("popular");
@@ -186,7 +195,7 @@ public class MainActivity extends AppCompatActivity {
         mRecyclerView.setVisibility(View.INVISIBLE);
         mRetryBtn.setVisibility(View.INVISIBLE);
         mProgressBar.setVisibility(View.VISIBLE);
-        URL movieDataEndpointUrl = NetworkUtils.buildUrl(this, sortBy);
+        URL movieDataEndpointUrl = NetworkUtils.buildUrl(this, sortBy, "1");
         if(NetworkUtils.isNetworkAvailable(MainActivity.this)){
             new MovieDbQueryTask().execute(movieDataEndpointUrl);
         } else {
@@ -209,6 +218,42 @@ public class MainActivity extends AppCompatActivity {
         } else{
             mRetryBtn.setVisibility(View.VISIBLE);
         }
+    }
+
+    public String getShortSortName(String longSortName) {
+        String shortSortName = "";
+        if(longSortName.equals("action_sort_popular"))
+            shortSortName = "popular";
+        else if (longSortName.equals("action_sort_top_rated"))
+            shortSortName = "top_rated";
+        return shortSortName;
+    }
+
+    public void scrollListener(){
+        mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener(){
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                if(dy > 0) //check for scroll down
+                {
+                    visibleItemCount = mLayoutManager.getChildCount();
+                    totalItemCount = mLayoutManager.getItemCount();
+                    pastVisiblesItems = mLayoutManager.findFirstVisibleItemPosition();
+
+                    if (reachedBottom) {
+                        if ( (visibleItemCount + pastVisiblesItems) >= totalItemCount) {
+                            reachedBottom = false;
+                            URL movieDataEndpointUrl = NetworkUtils.buildUrl(MainActivity.this, getShortSortName(mSortOrder), "2");
+                            if(NetworkUtils.isNetworkAvailable(MainActivity.this)){
+                                new MovieDbQueryTask().execute(movieDataEndpointUrl);
+                            } else {
+                                connectionFailed();
+                            }
+                        }
+                    }
+                }
+            }
+        });
     }
 
     class MovieDbQueryTask extends AsyncTask<URL, Void, String> {
