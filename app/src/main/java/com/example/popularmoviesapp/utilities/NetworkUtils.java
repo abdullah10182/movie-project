@@ -22,7 +22,7 @@ public class NetworkUtils {
     //http://api.themoviedb.org/3/movie/popular?api_key=1794dee38856c7c24f577c0cae2e2b15
 
 
-    public static URL buildUrl(Context context, String sortBy, String page) {
+    public static URL buildUrl(Context context, String sortBy, int page) {
         //popularity.desc, popularity.asc, vote_count.desc, vote_count.asc
         URL url = null;
         String apiKey = context.getResources().getString(R.string.the_moviedb_api_key);
@@ -30,7 +30,7 @@ public class NetworkUtils {
         Uri builtUri = Uri.parse(MOVIE_DB_BASE_URL).buildUpon()
                 .appendPath(sortBy)
                 .appendQueryParameter("api_key", apiKey)
-                .appendQueryParameter("page", page)
+                .appendQueryParameter("page", Integer.toString(page))
                 .build();
         try {
             url = new URL(builtUri.toString());

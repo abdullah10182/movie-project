@@ -3,9 +3,7 @@ package com.example.popularmoviesapp;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 //import androidx.lifecycle.ViewModelProviders;
-import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -13,8 +11,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Parcelable;
-import android.os.PersistableBundle;
 import android.os.StrictMode;
 import android.util.Log;
 import android.view.Menu;
@@ -51,8 +47,9 @@ public class MainActivity extends AppCompatActivity {
     //private Bundle mSavedInstanceState;
     private GridLayoutManager mLayoutManager;
 
-    private boolean reachedBottom = true;
-    int pastVisiblesItems, visibleItemCount, totalItemCount;
+    private boolean mScrollReachedBottom = false;
+    private int mCurrentPage = 1;
+    int pastVisibleItems, visibleItemCount, totalItemCount;
 
     private FavouriteMovieDatabase mDb;
 
@@ -171,7 +168,8 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         mSortOrder = getResources().getResourceName(item.getItemId()).split("\\/")[1];
         mRecyclerView.smoothScrollToPosition(0);
-        reachedBottom = true;
+        mScrollReachedBottom = false;
+        mCurrentPage = 1;
         switch (mSortOrder) {
             case "action_sort_popular":
                 fetchMovieData("popular");
@@ -195,7 +193,7 @@ public class MainActivity extends AppCompatActivity {
         mRecyclerView.setVisibility(View.INVISIBLE);
         mRetryBtn.setVisibility(View.INVISIBLE);
         mProgressBar.setVisibility(View.VISIBLE);
-        URL movieDataEndpointUrl = NetworkUtils.buildUrl(this, sortBy, "1");
+        URL movieDataEndpointUrl = NetworkUtils.buildUrl(this, sortBy, 1);
         if(NetworkUtils.isNetworkAvailable(MainActivity.this)){
             new MovieDbQueryTask().execute(movieDataEndpointUrl);
         } else {
@@ -234,16 +232,16 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
-                if(dy > 0) //check for scroll down
-                {
+                if(dy > 0) {
                     visibleItemCount = mLayoutManager.getChildCount();
                     totalItemCount = mLayoutManager.getItemCount();
-                    pastVisiblesItems = mLayoutManager.findFirstVisibleItemPosition();
+                    pastVisibleItems = mLayoutManager.findFirstVisibleItemPosition();
 
-                    if (reachedBottom) {
-                        if ( (visibleItemCount + pastVisiblesItems) >= totalItemCount) {
-                            reachedBottom = false;
-                            URL movieDataEndpointUrl = NetworkUtils.buildUrl(MainActivity.this, getShortSortName(mSortOrder), "2");
+                    if (!mScrollReachedBottom) {
+                        if ( (visibleItemCount + pastVisibleItems) >= totalItemCount && !mSortOrder.equals("action_sort_favourite")) {
+                            URL movieDataEndpointUrl = NetworkUtils.buildUrl(MainActivity.this, getShortSortName(mSortOrder), mCurrentPage);
+                            mScrollReachedBottom = true;
+                            mProgressBar.setVisibility(View.VISIBLE);
                             if(NetworkUtils.isNetworkAvailable(MainActivity.this)){
                                 new MovieDbQueryTask().execute(movieDataEndpointUrl);
                             } else {
@@ -276,8 +274,15 @@ public class MainActivity extends AppCompatActivity {
                 mProgressBar.setVisibility(View.INVISIBLE);
                 try {
                     mMovieItems = MovieDbJsonUtils.getArrayListMovieItems(jsonString);
-                    adapter.setMovieList(mMovieItems);
+                    if(mCurrentPage == 1)
+                        adapter.setMovieList(mMovieItems);
+                    else
+                        adapter.addToMoviesList(mMovieItems);
+
                     adapter.notifyDataSetChanged();
+                    mScrollReachedBottom = false;
+                    mProgressBar.setVisibility(View.INVISIBLE);
+                    mCurrentPage++;
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }

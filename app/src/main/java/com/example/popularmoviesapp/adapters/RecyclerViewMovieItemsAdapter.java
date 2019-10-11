@@ -65,8 +65,12 @@ public class RecyclerViewMovieItemsAdapter extends RecyclerView.Adapter<Recycler
         mContext.startActivity(intent);
     }
 
-    public void setMovieList(List<MovieItem> movieList) {
+    public void addToMoviesList(List<MovieItem> movieList) {
         this.mMovieItems.addAll(movieList);
+    }
+
+    public void setMovieList(List<MovieItem> movieList) {
+        this.mMovieItems= movieList;
     }
 
 
